@@ -1,0 +1,8 @@
+spring.application.name=
+spring.datasource.driver-class-name=
+spring.datasource.url=
+spring.datasource.username=
+spring.datasource.password=
+spring.jpa.show-sql=
+spring.jpa.hibernate.ddl-auto=
+spring.jpa.hibernate.naming.physical-strategy=
