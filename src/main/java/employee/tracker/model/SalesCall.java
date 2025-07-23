@@ -1,35 +1,51 @@
 package employee.tracker.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
 @AllArgsConstructor
-@RequiredArgsConstructor
 @NoArgsConstructor
+@Builder
 public class SalesCall {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Date createdAt;
-    private Date closedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
     private boolean isFollowUp;
-    private Date followUpData;
+    private LocalDateTime followUpData;
 
     @ManyToOne
     @JoinColumn(name="sale_id")
+    @JsonIgnoreProperties({"salesCalls"})
     private Sales sale;
     private String notes;
-    private String status; //will become an enum
-    @ManyToOne
-    private User loggedBy;
+    @Enumerated(EnumType.STRING)
+    private Status status; //ENUM
 
+
+    @ManyToOne
+    private Users loggedBy;
+
+    @PrePersist
+    protected void onCreate(){
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate(){
+        this.updatedAt = LocalDateTime.now();
+    }
 }
+

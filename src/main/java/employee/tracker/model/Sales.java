@@ -3,44 +3,48 @@ package employee.tracker.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
-import java.util.Date;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@RequiredArgsConstructor
+@Builder
 public class Sales {
     // This contains information about the clients who are reached out for sales call, Meaning for the product they are buying.
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
     private String phoneNo;
     private String Gender;
     private int age;
-    private Date dob;
+    private LocalDateTime dob;
     private String maritalStatus;
     private String occupation;
-    private int annualIncome;
-    @OneToMany
-    private List<Products> products;
-    // Can be kept because one customer can purchase many products. Might have to remove it if each new sales call is a different entry.
+    private BigDecimal annualIncome;
 
-//    private Date followUp;
-//    private String Note;
+    @ManyToOne
+    @JoinColumn(name="product_id")
+    private Products product; // Need to ask
+    // Can be kept because one customer can purchase many products. Might have to remove it if each new sales call is a different entry.
 
     @ManyToOne
     @JoinColumn(name="created_by_id",nullable = false)
     @JsonIgnoreProperties({"sales", "recruitments"})
-    private User createdBy;
+    private Users createdBy;
 
     @OneToMany(mappedBy = "sale")
+    @JsonIgnoreProperties({"sale"})
     private List<SalesCall> salesCalls;
+
+
 }
+

@@ -3,51 +3,55 @@ package employee.tracker.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import java.util.Date;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Data
 @NoArgsConstructor
-@RequiredArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Recruitment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
     private String phoneNo;
     private String Gender;
     private int age;
-    private Date dob;
+    private LocalDateTime dob;
     private String maritalStatus;
     private String occupation;
     private String profession;
-    private int annualIncome;
+    private BigDecimal annualIncome;
 
-    private String isCompetition; // ENUM: Yes or No
+    private boolean isCompetition; // ENUM
     private String competingCompany; // Only if the above one is yes
 
-    private String optedPosition; // ENUM: IM/SIM/CIM
+    private IMOptedPosition optedPosition; // ENUM
 
     private String referredBy; // Self/Other IMs
-    private String leadSources; // If self in the above, ENUM: Tele calling/Lane Mapping/BOP
 
-//    private Date followUp;
-//    private String Note;
+    @Enumerated(EnumType.STRING)
+    private LeadSources leadSources; // ENUM
 
     @ManyToOne
     @JoinColumn(name="created_by_id")
     @JsonIgnoreProperties({"sales", "recruitments"})
-    private User createdBy;
+    private Users createdBy;
 
     @OneToMany(mappedBy = "recruitment")
+    @JsonIgnoreProperties({"recruitment"})
     private List<RecruitmentCall> recruitmentCalls;
 
 }
 
+enum LeadSources{TELECALLING,LANE_MAPPING,BOP}
+enum IMOptedPosition{IM,SIM,CIM}

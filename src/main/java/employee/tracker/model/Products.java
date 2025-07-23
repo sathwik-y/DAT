@@ -6,26 +6,28 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import java.util.Date;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
 @NoArgsConstructor
-@RequiredArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Products {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
     private String type;
-    private String value;
-    private Date launchedAt;
-    private Date stoppedAt;
+    private BigDecimal value;
+    private LocalDateTime launchedAt;
+    private LocalDateTime stoppedAt;
 
     private String note;
     // TODO: Can map each product to the customers who purchased this product

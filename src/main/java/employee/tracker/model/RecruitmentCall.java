@@ -1,19 +1,19 @@
 package employee.tracker.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Data
 @AllArgsConstructor
-@RequiredArgsConstructor
 @NoArgsConstructor
+@Builder
 public class RecruitmentCall {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,17 +24,19 @@ public class RecruitmentCall {
     private LocalDateTime updatedAt;
 
     private boolean isFollowUp;
-    private LocalDateTime followUpData; // This should only show up if the above value is true
+    private LocalDateTime followUpDate; // This should only show up if the above value is true
 
     @ManyToOne
     @JoinColumn(name = "sale_id")
+    @JsonIgnoreProperties({"recruitmentCalls"})
     private Recruitment recruitment;
     private String notes;
 
     @Enumerated(EnumType.STRING)
-    private Status status; //will become an enum: Pending, DONE
+    private Status status; // ENUM
+
     @ManyToOne
-    private User loggedBy;
+    private Users loggedBy;
 
     @PrePersist
     protected void onCreate(){
@@ -48,4 +50,4 @@ public class RecruitmentCall {
     }
 }
 
-enum Status {PENDING, CLOSED}
+enum Status {OPEN,PENDING, CLOSED}
