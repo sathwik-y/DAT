@@ -24,7 +24,7 @@ public class Sales {
 
     private String name;
     private String phoneNo;
-    private String Gender;
+    private String gender;
     private int age;
     private LocalDateTime dob;
     private String maritalStatus;
@@ -37,7 +37,7 @@ public class Sales {
     // Can be kept because one customer can purchase many products. Might have to remove it if each new sales call is a different entry.
 
     @ManyToOne
-    @JoinColumn(name="created_by_id",nullable = false)
+    @JoinColumn(name="created_by_id") // set nullable= false later
     @JsonIgnoreProperties({"sales", "recruitments"})
     private Users createdBy;
 

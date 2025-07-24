@@ -2,6 +2,7 @@ package employee.tracker.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import employee.tracker.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,10 +20,14 @@ public class Users {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // This one is only with respect to the database, not the employee id. Or we can also switch this with the employee id again later
+    private Long id; // This one is only with respect to the database, not the employee id
     private String name;
     private String phoneNo;
-    private int empId;
+    @Column(unique = true,nullable = false)
+    private String userName; // This will be the empId of the login
+    @Column(nullable = false)
+    private String password;
+    private String emailId;
 
     @Enumerated(EnumType.STRING)
     private Role role; // ENUM
@@ -37,7 +42,6 @@ public class Users {
     @JsonIgnoreProperties({"createdBy"})
     private List<Recruitment> recruitments; // Same here
 
-    // TODO: Either seperate the tables based on the role, becaue those who are at the higher position might not enter anything on their own and they might just track the data. So we can seperate them or leave them be.
+    // TODO: Either seperate the tables based on the role, because those who are at the higher position might not enter anything on their own and they might just track the data. So we can seperate them or leave them be.
 
 }
-enum Role{NH,ZH,RH,ARH,AM,TM,IM,SIM,CIM}

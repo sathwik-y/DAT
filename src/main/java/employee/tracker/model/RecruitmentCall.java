@@ -1,6 +1,7 @@
 package employee.tracker.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import employee.tracker.enums.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -50,4 +51,3 @@ public class RecruitmentCall {
     }
 }
 
-enum Status {OPEN,PENDING, CLOSED}

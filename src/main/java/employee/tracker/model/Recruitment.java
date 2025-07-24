@@ -1,6 +1,8 @@
 package employee.tracker.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import employee.tracker.enums.IMOptedPosition;
+import employee.tracker.enums.LeadSources;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,7 +26,7 @@ public class Recruitment {
 
     private String name;
     private String phoneNo;
-    private String Gender;
+    private String gender;
     private int age;
     private LocalDateTime dob;
     private String maritalStatus;
@@ -32,7 +34,7 @@ public class Recruitment {
     private String profession;
     private BigDecimal annualIncome;
 
-    private boolean isCompetition; // ENUM
+    private boolean isCompetition;
     private String competingCompany; // Only if the above one is yes
 
     private IMOptedPosition optedPosition; // ENUM
@@ -53,5 +55,3 @@ public class Recruitment {
 
 }
 
-enum LeadSources{TELECALLING,LANE_MAPPING,BOP}
-enum IMOptedPosition{IM,SIM,CIM}

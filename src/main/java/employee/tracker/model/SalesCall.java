@@ -1,6 +1,7 @@
 package employee.tracker.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import employee.tracker.enums.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,7 +24,7 @@ public class SalesCall {
     private LocalDateTime updatedAt;
 
     private boolean isFollowUp;
-    private LocalDateTime followUpData;
+    private LocalDateTime followUpDate;
 
     @ManyToOne
     @JoinColumn(name="sale_id")
