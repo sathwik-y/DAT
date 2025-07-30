@@ -1,6 +1,7 @@
 package employee.tracker.controller;
 
 import employee.tracker.dto.NewSalesDTO;
+import employee.tracker.dto.SalesFilterDTO;
 import employee.tracker.model.Sales;
 import employee.tracker.model.SalesCall;
 import employee.tracker.repository.ProductRepo;
@@ -9,10 +10,10 @@ import employee.tracker.service.SalesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -26,7 +27,9 @@ public class SalesController{
 
     @PostMapping("/new-call")
     public ResponseEntity<Sales> createNewSale(@RequestBody NewSalesDTO newSalesDTO){
-        // TODO: need to get the username and pass it when the JWT is implemented
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
         try{
 
             // Set the new sales entity
@@ -39,8 +42,7 @@ public class SalesController{
                     .dob(newSalesDTO.getDob())
                     .maritalStatus(newSalesDTO.getMaritalStatus())
                     .occupation(newSalesDTO.getOccupation())
-//                    .product(productRepo.getReferenceById(newSalesDTO.getProductId()))
-                    // .createdBy(username) TODO: Replace it with the actual username when implemented
+                    .product(productRepo.getReferenceById(newSalesDTO.getProductId()))
                     .build();
 
             // Set the new Sales Call entity
@@ -51,15 +53,85 @@ public class SalesController{
                     .isFollowUp(false)
                     .build();
 
-            newSale.setSalesCalls(List.of(newSalesCall));
+            newSale.setSalesCalls(List.of(newSalesCall)); // this will always create a new list as this is a new call
             newSalesCall.setSale(newSale);
 
-            salesService.createNewSale(newSale);
-            salesCallService.createNewCall(newSalesCall);
-            return new ResponseEntity<>(newSale, HttpStatus.CREATED);
+            Sales savedSale = salesService.createNewSale(newSale,username);
+            salesCallService.createNewCall(newSalesCall,username);
+            return new ResponseEntity<>(savedSale,HttpStatus.CREATED);
         }catch(Exception e){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 
+    // This to get all the sales of the logged-in user
+    @PreAuthorize("hasRole('ZH')")
+    @GetMapping("/zone")
+    public ResponseEntity<List<Sales>> getAllSalesByZone(@RequestBody SalesFilterDTO filters){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        try{
+            List<Sales> allZonalSales =  salesService.getZonalSales(username,filters);
+            return new ResponseEntity<>(allZonalSales,HttpStatus.OK);
+        }catch(Exception e){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PreAuthorize("hasAnyRole('RH','ARH')")
+    @GetMapping("/regional")
+    public ResponseEntity<List<Sales>> getAllSalesByRegion(@RequestBody SalesFilterDTO filters){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        try{
+            List<Sales> allRegionalSales = salesService.getRegionalSales(username,filters);
+            return new ResponseEntity<>(allRegionalSales,HttpStatus.OK);
+        }catch(Exception e){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PreAuthorize("hasRole('TM')")
+    @GetMapping("/territorial")
+    public ResponseEntity<List<Sales>> getAllSalesByTerritory(@RequestBody SalesFilterDTO filters){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        try{
+            List<Sales> allTerritorialSales = salesService.getTerritorialSales(username,filters);
+            return new ResponseEntity<>(allTerritorialSales,HttpStatus.OK);
+        }catch(Exception e){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PreAuthorize("hasRole('AM')")
+    @GetMapping("/area")
+    public ResponseEntity<List<Sales>> getAllSalesByArea(@RequestBody SalesFilterDTO filters){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        try{
+            List<Sales> allAreaSales = salesService.getAreaSales(username,filters);
+            return new ResponseEntity<>(allAreaSales,HttpStatus.OK);
+        }catch(Exception e){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PreAuthorize("hasRole('NH')")
+    @GetMapping("/all")
+    public ResponseEntity<List<Sales>> getAllSales(@RequestBody SalesFilterDTO filters){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        try{
+            List<Sales> allSales = salesService.getAllSales(filters);
+            return new ResponseEntity<>(allSales,HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    // another controller:
+    // fetch by date(month, week, day, range of month/date/week), user, region, mostly for the sales calls and not the actual sales
+
+    // do the above using request param
 }

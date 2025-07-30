@@ -36,6 +36,8 @@ public class SalesCall {
 
 
     @ManyToOne
+    @JoinColumn(name="user_id")
+    @JsonIgnoreProperties({"salesCalls"})
     private Users loggedBy;
 
     @PrePersist

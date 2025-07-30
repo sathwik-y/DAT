@@ -2,7 +2,10 @@ package employee.tracker.model;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import employee.tracker.enums.Region;
 import employee.tracker.enums.Role;
+import employee.tracker.enums.Territory;
+import employee.tracker.enums.Zone;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,9 +33,17 @@ public class Users {
     private String emailId;
 
     @Enumerated(EnumType.STRING)
-    private Role role; // ENUM
+    private Role role;
 
-    private String region;
+    @Enumerated(EnumType.STRING)
+    private Region region;
+
+    @Enumerated(EnumType.STRING)
+    private Territory territory;
+
+    @Enumerated(EnumType.STRING)
+    private Zone zone;
+    private String area;
     private String gender;
 
     @OneToMany(fetch=FetchType.LAZY,mappedBy = "createdBy",orphanRemoval = false)
@@ -42,6 +53,11 @@ public class Users {
     @JsonIgnoreProperties({"createdBy"})
     private List<Recruitment> recruitments; // Same here
 
+    @OneToMany(fetch=FetchType.LAZY,mappedBy = "loggedBy",orphanRemoval = false)
+    @JsonIgnoreProperties({"loggedBy"})
+    private List<SalesCall> salesCalls;
     // TODO: Either seperate the tables based on the role, because those who are at the higher position might not enter anything on their own and they might just track the data. So we can seperate them or leave them be.
+
+
 
 }

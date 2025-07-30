@@ -30,7 +30,8 @@ public class Sales {
     private String maritalStatus;
     private String occupation;
     private BigDecimal annualIncome;
-
+    private LocalDateTime createdAt;
+//    private LocalDateTime updatedAt;
     @ManyToOne
     @JoinColumn(name="product_id")
     private Products product; // Need to ask
@@ -46,5 +47,15 @@ public class Sales {
     private List<SalesCall> salesCalls;
 
 
+    @PrePersist
+    protected void onCreate(){
+        this.createdAt = LocalDateTime.now();
+//        this.updatedAt = LocalDateTime.now();
+    }
+
+//    @PreUpdate
+//    protected void onUpdate(){
+//        this.updatedAt = LocalDateTime.now();
+//    }
 }
 

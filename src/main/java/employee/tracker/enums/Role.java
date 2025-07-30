@@ -7,7 +7,4 @@ public enum Role {
     ARH,
     AM,
     TM,
-    IM,
-    SIM,
-    CIM
 }
