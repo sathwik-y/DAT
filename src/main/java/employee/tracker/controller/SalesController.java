@@ -120,8 +120,6 @@ public class SalesController{
     @PreAuthorize("hasRole('NH')")
     @GetMapping("/all")
     public ResponseEntity<List<Sales>> getAllSales(@RequestBody SalesFilterDTO filters){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
         try{
             List<Sales> allSales = salesService.getAllSales(filters);
             return new ResponseEntity<>(allSales,HttpStatus.OK);
@@ -130,8 +128,5 @@ public class SalesController{
         }
     }
 
-    // another controller:
-    // fetch by date(month, week, day, range of month/date/week), user, region, mostly for the sales calls and not the actual sales
-
-    // do the above using request param
+    //TODO: Get sales by user
 }

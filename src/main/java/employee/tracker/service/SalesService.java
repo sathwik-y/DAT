@@ -1,5 +1,6 @@
 package employee.tracker.service;
 
+import employee.tracker.dto.SalesCallFilterDTO;
 import employee.tracker.dto.SalesFilterDTO;
 import employee.tracker.model.Sales;
 import employee.tracker.model.Users;
@@ -24,13 +25,17 @@ public class SalesService {
         if (user == null) throw new RuntimeException("User not found: " + username);
         newSale.setCreatedBy(user);
 
+        Sales savedSale = salesRepo.save(newSale);
+
         if (user.getSales() == null) {
             user.setSales(new ArrayList<>());  // Initialize if null
         }
-        user.getSales().add(newSale);
+        user.getSales().add(savedSale);
 
-        return salesRepo.save(newSale);
+        return savedSale;
     }
+
+    // TODO: Will there be a filter by role?
 
     public List<Sales> getZonalSales(String username, SalesFilterDTO filters) {
         Users user = usersRepo.findByUserName(username);
@@ -92,4 +97,5 @@ public class SalesService {
                 filters.getArea()
         );
     }
+
 }

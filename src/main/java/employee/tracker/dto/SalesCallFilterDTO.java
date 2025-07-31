@@ -1,12 +1,10 @@
 package employee.tracker.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.Data;
 
 import java.time.LocalDate;
 
-@Data
-public class SalesFilterDTO {
+public class SalesCallFilterDTO{
     // Date filters -> Will be sent from the frontend based on the user selection
     @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate startDate;
@@ -23,8 +21,8 @@ public class SalesFilterDTO {
 //    private String createdByUsername;
 //    private String roleName; TODO: Need to add this if users get to filter by the role as well.
 
-//    private String status;
-//    private boolean isFollowUp;
+    private String status;
+    private boolean isFollowUp;
 
     // TODO: Add pagination
 
