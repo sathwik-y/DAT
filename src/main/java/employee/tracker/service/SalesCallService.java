@@ -42,8 +42,6 @@ public class SalesCallService {
 
     @Transactional
     public void createNewCall(SalesCall newSalesCall, String username) {
-
-        // TODO: Replace the save with -> Fetch User (and fetch the sale)-> Add Sales to that user -> Persist Changes
         Users user = usersRepo.findByUserName(username);
         if (user == null) throw new RuntimeException("User not found: " + username);
 
@@ -55,29 +53,72 @@ public class SalesCallService {
         user.getSalesCalls().add(newCall);
     }
 
-//    public List<Sales> getZonalSalesCalls(String username, SalesFilterDTO filters) {
-//        Users user = usersRepo.findByUserName(username);
-//        return salesCallRepo.findZonalSalesCalls(
-//                user.getZone(),
-//                user.getRole(),
-//                filters.getStartDate(),
-//                filters.getEndDate(),
-//                filters.getRegion(),
-//                filters.getTerritory(),
-//                filters.getArea()
-//        );
-//
-//    }
+    public List<SalesCall> getZonalSalesCalls(String username, SalesFilterDTO filters) {
+        Users user = usersRepo.findByUserName(username);
+        return salesCallRepo.findZonalSalesCalls(
+                user.getZone(),
+                user.getRole(),
+                filters.getStartDate(),
+                filters.getEndDate(),
+                filters.getRegion(),
+                filters.getTerritory(),
+                filters.getArea(),
+                filters.getStatus(),
+                filters.getIsFollowUp()
+        );
 
-//    public List<Sales> getRegionalSalesCalls(String username, SalesFilterDTO filters) {
-//    }
-//
-//    public List<Sales> getTerritorialSalesCalls(String username, SalesFilterDTO filters) {
-//    }
-//
-//    public List<Sales> getAreaSalesCalls(String username, SalesFilterDTO filters) {
-//    }
-//
-//    public List<Sales> getAllSalesCalls(SalesFilterDTO filters) {
-//    }
+    }
+
+    public List<SalesCall> getRegionalSalesCalls(String username, SalesFilterDTO filters) {
+        Users user = usersRepo.findByUserName(username);
+        return salesCallRepo.findRegionalSalesCalls(
+                user.getRegion(),
+                user.getRole(),
+                filters.getStartDate(),
+                filters.getEndDate(),
+                filters.getArea(),
+                filters.getTerritory(),
+                filters.getStatus(),
+                filters.getIsFollowUp()
+        );
+    }
+
+    public List<SalesCall> getTerritorialSalesCalls(String username, SalesFilterDTO filters) {
+        Users user = usersRepo.findByUserName(username);
+        return salesCallRepo.findTerritorialSalesCalls(
+                user.getTerritory(),
+//                user.getRole(),
+                filters.getStartDate(),
+                filters.getEndDate(),
+                filters.getStatus(),
+                filters.getIsFollowUp()
+        );
+    }
+
+    public List<SalesCall> getAreaSalesCalls(String username, SalesFilterDTO filters) {
+        Users user = usersRepo.findByUserName(username);
+        return salesCallRepo.findAreaSalesCalls(
+                user.getArea(),
+                user.getRole(),
+                filters.getStartDate(),
+                filters.getEndDate(),
+                filters.getTerritory(),
+                filters.getStatus(),
+                filters.getIsFollowUp()
+        );
+    }
+
+    public List<SalesCall> getAllSalesCalls(SalesFilterDTO filters) {
+        return salesCallRepo.findNationalSalesCalls(
+                filters.getZone(),
+//                "NH",
+                filters.getStartDate(),
+                filters.getEndDate(),
+                filters.getRegion(),
+                filters.getTerritory(),
+                filters.getArea(),
+                filters.getStatus(),
+                filters.getIsFollowUp()
+        );
+    }
 }

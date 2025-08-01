@@ -37,7 +37,7 @@ public interface SalesRepo extends JpaRepository<Sales,Long> {
             @Param("area") String area,
             @Param("status") Status status,
             @Param("isFollowUp") Boolean isFollowUp
-            );
+    );
 
 
     // Fetch the Regional Head Sales
@@ -63,21 +63,25 @@ public interface SalesRepo extends JpaRepository<Sales,Long> {
             @Param("territory") String territory,
             @Param("status") Status status,
             @Param("isFollowUp") Boolean isFollowUp
-            );
-
-
+    );
 
 
     // NOTE: If there are no one under the TM,this will be just about fetching his own sales details, which will be redundant once we add "My Profile" Section
     @Query("select s From Sales s " +
+            "JOIN s.salesCalls sc " +
             "WHERE s.createdBy.territory=:territory " +
+            "AND sc.createdAt = (SELECT MAX(sc2.createdAt) FROM SalesCall sc2 WHERE sc2.sale=s)" +
             "AND (:startDate is NULL OR s.createdAt>= :startDate) " +
+            "AND (:status is NULL or sc.status = :status) " +
+            "AND (:isFollowUp is NULL or sc.isFollowUp = :isFollowUp)"+
             "AND (:endDate is NULL or s.createdAt<=:endDate)")
     List<Sales> findTerritorialSales(
             @Param("territory") Territory createdByTerritory,
 //            Role role,
             @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate
+            @Param("endDate") LocalDate endDate,
+            @Param("status") Status status,
+            @Param("isFollowUp") Boolean isFollowUp
     );
 
 
@@ -127,4 +131,5 @@ public interface SalesRepo extends JpaRepository<Sales,Long> {
             @Param("status") Status status,
             @Param("isFollowUp") Boolean isFollowUp
     );
+
 }

@@ -37,11 +37,11 @@ public class SalesCallController {
 
     @PreAuthorize("hasRole('ZH')")
     @GetMapping("/zone")
-    public ResponseEntity<List<Sales>> getAllSalesCallsByZone(@RequestBody SalesFilterDTO filters){
+    public ResponseEntity<List<SalesCall>> getAllSalesCallsByZone(@RequestBody SalesFilterDTO filters){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         try{
-            List<Sales> allZonalSalesCalls =  salesCallService.getZonalSalesCalls(username,filters);
+            List<SalesCall> allZonalSalesCalls =  salesCallService.getZonalSalesCalls(username,filters);
             return new ResponseEntity<>(allZonalSalesCalls, HttpStatus.OK);
         }catch(Exception e){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -50,11 +50,11 @@ public class SalesCallController {
 
     @PreAuthorize("hasAnyRole('RH','ARH')")
     @GetMapping("/regional")
-    public ResponseEntity<List<Sales>> getAllSalesCallsByRegion(@RequestBody SalesFilterDTO filters){
+    public ResponseEntity<List<SalesCall>> getAllSalesCallsByRegion(@RequestBody SalesFilterDTO filters){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         try{
-            List<Sales> allRegionalSales = salesCallService.getRegionalSalesCalls(username,filters);
+            List<SalesCall> allRegionalSales = salesCallService.getRegionalSalesCalls(username,filters);
             return new ResponseEntity<>(allRegionalSales,HttpStatus.OK);
         }catch(Exception e){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -63,11 +63,11 @@ public class SalesCallController {
 
     @PreAuthorize("hasRole('TM')")
     @GetMapping("/territorial")
-    public ResponseEntity<List<Sales>> getAllSalesCallByTerritory(@RequestBody SalesFilterDTO filters){
+    public ResponseEntity<List<SalesCall>> getAllSalesCallByTerritory(@RequestBody SalesFilterDTO filters){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         try{
-            List<Sales> allTerritorialSales = salesCallService.getTerritorialSalesCalls(username,filters);
+            List<SalesCall> allTerritorialSales = salesCallService.getTerritorialSalesCalls(username,filters);
             return new ResponseEntity<>(allTerritorialSales,HttpStatus.OK);
         }catch(Exception e){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -76,11 +76,11 @@ public class SalesCallController {
 
     @PreAuthorize("hasRole('AM')")
     @GetMapping("/area")
-    public ResponseEntity<List<Sales>> getAllSalesByArea(@RequestBody SalesFilterDTO filters){
+    public ResponseEntity<List<SalesCall>> getAllSalesByArea(@RequestBody SalesFilterDTO filters){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         try{
-            List<Sales> allAreaSales = salesCallService.getAreaSalesCalls(username,filters);
+            List<SalesCall> allAreaSales = salesCallService.getAreaSalesCalls(username,filters);
             return new ResponseEntity<>(allAreaSales,HttpStatus.OK);
         }catch(Exception e){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -89,9 +89,9 @@ public class SalesCallController {
 
     @PreAuthorize("hasRole('NH')")
     @GetMapping("/all")
-    public ResponseEntity<List<Sales>> getAllSales(@RequestBody SalesFilterDTO filters){
+    public ResponseEntity<List<SalesCall>> getAllSales(@RequestBody SalesFilterDTO filters){
         try{
-            List<Sales> allSales = salesCallService.getAllSalesCalls(filters);
+            List<SalesCall> allSales = salesCallService.getAllSalesCalls(filters);
             return new ResponseEntity<>(allSales,HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

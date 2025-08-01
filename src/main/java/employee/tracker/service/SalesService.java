@@ -74,7 +74,9 @@ public class SalesService {
                 user.getTerritory(),
 //                user.getRole(),
                 filters.getStartDate(),
-                filters.getEndDate()
+                filters.getEndDate(),
+                filters.getStatus(),
+                filters.getIsFollowUp()
         );
     }
 
