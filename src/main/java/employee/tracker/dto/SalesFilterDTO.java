@@ -1,6 +1,7 @@
 package employee.tracker.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import employee.tracker.enums.Status;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -19,12 +20,14 @@ public class SalesFilterDTO {
     private String territory;
     private String area;
 
+
+
     // User filters
 //    private String createdByUsername;
 //    private String roleName; TODO: Need to add this if users get to filter by the role as well.
 
-//    private String status;
-//    private boolean isFollowUp;
+    private Status status;
+    private Boolean isFollowUp;
 
     // TODO: Add pagination
 

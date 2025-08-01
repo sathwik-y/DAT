@@ -46,6 +46,8 @@ public class Sales {
     @JsonIgnoreProperties({"sale"})
     private List<SalesCall> salesCalls;
 
+    //TODO: Add Premium Pitched
+    // TODO: Referred by
 
     @PrePersist
     protected void onCreate(){
@@ -53,6 +55,7 @@ public class Sales {
 //        this.updatedAt = LocalDateTime.now();
     }
 
+    //  TODO: Sale should have an updated at whenever a new salescall for this sale is added
 //    @PreUpdate
 //    protected void onUpdate(){
 //        this.updatedAt = LocalDateTime.now();

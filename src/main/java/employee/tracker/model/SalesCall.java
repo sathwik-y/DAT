@@ -21,8 +21,6 @@ public class SalesCall {
     private Long id;
 
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
     private boolean isFollowUp;
     private LocalDateTime followUpDate;
 
@@ -43,12 +41,12 @@ public class SalesCall {
     @PrePersist
     protected void onCreate(){
         this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+//        this.updatedAt = LocalDateTime.now();
     }
 
-    @PreUpdate
-    protected void onUpdate(){
-        this.updatedAt = LocalDateTime.now();
-    }
+//    @PreUpdate
+//    protected void onUpdate(){
+//        this.updatedAt = LocalDateTime.now();
+//    }
 }
 

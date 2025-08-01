@@ -1,12 +1,9 @@
 package employee.tracker.controller;
 
-import employee.tracker.dto.SalesCallFilterDTO;
 import employee.tracker.dto.SalesFilterDTO;
 import employee.tracker.model.Sales;
 import employee.tracker.model.SalesCall;
-import employee.tracker.repository.ProductRepo;
 import employee.tracker.service.SalesCallService;
-import employee.tracker.service.SalesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +37,7 @@ public class SalesCallController {
 
     @PreAuthorize("hasRole('ZH')")
     @GetMapping("/zone")
-    public ResponseEntity<List<Sales>> getAllSalesCallsByZone(@RequestBody SalesCallFilterDTO filters){
+    public ResponseEntity<List<Sales>> getAllSalesCallsByZone(@RequestBody SalesFilterDTO filters){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         try{
@@ -53,7 +50,7 @@ public class SalesCallController {
 
     @PreAuthorize("hasAnyRole('RH','ARH')")
     @GetMapping("/regional")
-    public ResponseEntity<List<Sales>> getAllSalesCallsByRegion(@RequestBody SalesCallFilterDTO filters){
+    public ResponseEntity<List<Sales>> getAllSalesCallsByRegion(@RequestBody SalesFilterDTO filters){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         try{
@@ -66,7 +63,7 @@ public class SalesCallController {
 
     @PreAuthorize("hasRole('TM')")
     @GetMapping("/territorial")
-    public ResponseEntity<List<Sales>> getAllSalesCallByTerritory(@RequestBody SalesCallFilterDTO filters){
+    public ResponseEntity<List<Sales>> getAllSalesCallByTerritory(@RequestBody SalesFilterDTO filters){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         try{
@@ -79,7 +76,7 @@ public class SalesCallController {
 
     @PreAuthorize("hasRole('AM')")
     @GetMapping("/area")
-    public ResponseEntity<List<Sales>> getAllSalesByArea(@RequestBody SalesCallFilterDTO filters){
+    public ResponseEntity<List<Sales>> getAllSalesByArea(@RequestBody SalesFilterDTO filters){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         try{
@@ -92,7 +89,7 @@ public class SalesCallController {
 
     @PreAuthorize("hasRole('NH')")
     @GetMapping("/all")
-    public ResponseEntity<List<Sales>> getAllSales(@RequestBody SalesCallFilterDTO filters){
+    public ResponseEntity<List<Sales>> getAllSales(@RequestBody SalesFilterDTO filters){
         try{
             List<Sales> allSales = salesCallService.getAllSalesCalls(filters);
             return new ResponseEntity<>(allSales,HttpStatus.OK);

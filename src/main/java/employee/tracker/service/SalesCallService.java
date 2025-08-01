@@ -1,6 +1,6 @@
 package employee.tracker.service;
 
-import employee.tracker.dto.SalesCallFilterDTO;
+import employee.tracker.dto.SalesFilterDTO;
 import employee.tracker.model.Sales;
 import employee.tracker.model.SalesCall;
 import employee.tracker.model.Users;
@@ -55,19 +55,29 @@ public class SalesCallService {
         user.getSalesCalls().add(newCall);
     }
 
-    public List<Sales> getZonalSalesCalls(String username, SalesCallFilterDTO filters) {
-        return
-    }
+//    public List<Sales> getZonalSalesCalls(String username, SalesFilterDTO filters) {
+//        Users user = usersRepo.findByUserName(username);
+//        return salesCallRepo.findZonalSalesCalls(
+//                user.getZone(),
+//                user.getRole(),
+//                filters.getStartDate(),
+//                filters.getEndDate(),
+//                filters.getRegion(),
+//                filters.getTerritory(),
+//                filters.getArea()
+//        );
+//
+//    }
 
-    public List<Sales> getRegionalSalesCalls(String username, SalesCallFilterDTO filters) {
-    }
-
-    public List<Sales> getTerritorialSalesCalls(String username, SalesCallFilterDTO filters) {
-    }
-
-    public List<Sales> getAreaSalesCalls(String username, SalesCallFilterDTO filters) {
-    }
-
-    public List<Sales> getAllSalesCalls(SalesCallFilterDTO filters) {
-    }
+//    public List<Sales> getRegionalSalesCalls(String username, SalesFilterDTO filters) {
+//    }
+//
+//    public List<Sales> getTerritorialSalesCalls(String username, SalesFilterDTO filters) {
+//    }
+//
+//    public List<Sales> getAreaSalesCalls(String username, SalesFilterDTO filters) {
+//    }
+//
+//    public List<Sales> getAllSalesCalls(SalesFilterDTO filters) {
+//    }
 }

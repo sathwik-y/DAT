@@ -1,6 +1,5 @@
 package employee.tracker.service;
 
-import employee.tracker.dto.SalesCallFilterDTO;
 import employee.tracker.dto.SalesFilterDTO;
 import employee.tracker.model.Sales;
 import employee.tracker.model.Users;
@@ -46,7 +45,9 @@ public class SalesService {
                 filters.getEndDate(),
                 filters.getRegion(),
                 filters.getTerritory(),
-                filters.getArea()
+                filters.getArea(),
+                filters.getStatus(),
+                filters.getIsFollowUp()
         );
 
     }
@@ -59,7 +60,9 @@ public class SalesService {
                 filters.getStartDate(),
                 filters.getEndDate(),
                 filters.getArea(),
-                filters.getTerritory()
+                filters.getTerritory(),
+                filters.getStatus(),
+                filters.getIsFollowUp()
         );
     }
 // TODO: The thing with areas, how do we reverse map them, we can probably just do it by the region, each area manager can get their own region, but to fetch all that we need to create a new endpoint or something which will get do this for us.
@@ -82,7 +85,9 @@ public class SalesService {
                 user.getRole(),
                 filters.getStartDate(),
                 filters.getEndDate(),
-                filters.getTerritory()
+                filters.getTerritory(),
+                filters.getStatus(),
+                filters.getIsFollowUp()
         );
     }
 
@@ -94,7 +99,9 @@ public class SalesService {
                 filters.getEndDate(),
                 filters.getRegion(),
                 filters.getTerritory(),
-                filters.getArea()
+                filters.getArea(),
+                filters.getStatus(),
+                filters.getIsFollowUp()
         );
     }
 

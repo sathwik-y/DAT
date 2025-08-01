@@ -1,9 +1,6 @@
 package employee.tracker.repository;
 
-import employee.tracker.enums.Region;
-import employee.tracker.enums.Role;
-import employee.tracker.enums.Territory;
-import employee.tracker.enums.Zone;
+import employee.tracker.enums.*;
 import employee.tracker.model.Sales;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,14 +14,18 @@ import java.util.List;
 public interface SalesRepo extends JpaRepository<Sales,Long> {
 
     // Fetch the Zonal Head Sales with filters (passed from the frontend)
-    @Query("select s FROM Sales s " +
+    @Query("SELECT s FROM Sales s " +
+            "JOIN s.salesCalls sc " +
             "WHERE s.createdBy.zone=:zone " +
             "AND s.createdBy.role!=:role " +
             "AND (:startDate is NULL OR s.createdAt>= :startDate)" +
             "AND (:endDate is NULL or s.createdAt<=:endDate)" +
             "AND (:region is NULL or s.createdBy.region = :region) " +
             "AND (:territory is NULL or s.createdBy.territory= :territory)" +
-            "AND  (:area is NULL or s.createdBy.area = :area) "
+            "AND  (:area is NULL or s.createdBy.area = :area) " +
+            "AND sc.createdAt = (SELECT MAX(sc2.createdAt) FROM SalesCall sc2 WHERE sc2.sale = s)" +
+            "AND (:status is NULL or sc.status = :status) " +
+            "AND (:isFollowUp is NULL or sc.isFollowUp = :isFollowUp)"
     )
     List<Sales> findZonalSales(
             @Param("zone") Zone zone,
@@ -33,18 +34,24 @@ public interface SalesRepo extends JpaRepository<Sales,Long> {
             @Param("endDate") LocalDate endDate,
             @Param("region") String region,
             @Param("territory") String territory,
-            @Param("area") String area
+            @Param("area") String area,
+            @Param("status") Status status,
+            @Param("isFollowUp") Boolean isFollowUp
             );
 
 
     // Fetch the Regional Head Sales
-    @Query("select s FROM Sales s " +
+    @Query("SELECT s FROM Sales s " +
+            "JOIN s.salesCalls sc " +
             "WHERE s.createdBy.region=:region " +
             "AND s.createdBy.role!=:role " +
             "AND (:startDate is NULL OR s.createdAt>= :startDate)" +
             "AND (:endDate is NULL or s.createdAt<=:endDate)" +
             // TODO: Might have to change a few filters based on the hierarchy
-            "AND  (:area is NULL or s.createdBy.area = :area) " +
+            "AND sc.createdAt = (SELECT MAX(sc2.createdAt) FROM SalesCall  sc2 WHERE sc2.sale = s)" +
+            "AND (:status is NULL or sc.status = :status) " +
+            "AND (:isFollowUp is NULL or sc.isFollowUp = :isFollowUp)" +
+            "AND (:area is NULL or s.createdBy.area = :area) " +
             "AND (:territory is NULL or s.createdBy.territory = :territory)"
     )
     List<Sales> findRegionalSales(
@@ -53,7 +60,9 @@ public interface SalesRepo extends JpaRepository<Sales,Long> {
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
             @Param("area") String area,
-            @Param("territory") String territory
+            @Param("territory") String territory,
+            @Param("status") Status status,
+            @Param("isFollowUp") Boolean isFollowUp
             );
 
 
@@ -72,30 +81,40 @@ public interface SalesRepo extends JpaRepository<Sales,Long> {
     );
 
 
-    @Query("select s FROM Sales s " +
+    @Query("SELECT s FROM Sales s " +
+            "JOIN s.salesCalls sc " +
             "WHERE s.createdBy.area=:area " +
             "AND s.createdBy.role!=:role " +
-            "AND (:startDate is NULL OR s.createdAt>= :startDate)" +
+            "AND (:startDate is NULL OR s.createdAt>= :startDate) " +
+            "AND sc.createdAt = (SELECT MAX(sc2.createdAt) FROM SalesCall sc2 WHERE sc2.sale = s)" +
             "AND (:endDate is NULL or s.createdAt<=:endDate)" +
-            "AND (:territory is NULL or s.createdBy.territory = :territory)"
+            "AND (:territory is NULL or s.createdBy.territory = :territory)" +
+            "AND (:status is NULL or sc.status = :status) " +
+            "AND (:isFollowUp is NULL or sc.isFollowUp = :isFollowUp)"
     )
     List<Sales> findAreaSales(
             @Param("area") String createdByArea,
             @Param("role") Role role,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
-            @Param("territory") String territory
+            @Param("territory") String territory,
+            @Param("status") Status status,
+            @Param("isFollowUp") Boolean isFollowUp
     );
 
     // The NH can basically get everything
-    @Query("select s FROM Sales s " +
+    @Query("SELECT s FROM Sales s " +
+            "JOIN s.salesCalls sc " +
             "WHERE (:zone is NULL OR s.createdBy.zone=:zone)" +
 //            "AND s.createdBy.role!=:role " +
             "AND (:startDate is NULL OR s.createdAt>= :startDate)" +
             "AND (:endDate is NULL or s.createdAt<=:endDate)" +
             "AND (:region is NULL or s.createdBy.region = :region) " +
             "AND (:territory is NULL or s.createdBy.territory= :territory)" +
-            "AND  (:area is NULL or s.createdBy.area = :area) "
+            "AND (:area is NULL or s.createdBy.area = :area) " +
+            "AND sc.createdAt = (SELECT MAX(sc2.createdAt) FROM SalesCall sc2 WHERE sc2.sale = s)" +
+            "AND (:status is NULL or sc.status = :status) " +
+            "AND (:isFollowUp is NULL or sc.isFollowUp = :isFollowUp) "
     )
     List<Sales> findNationalSales(
             @Param("zone") String zone,
@@ -104,6 +123,8 @@ public interface SalesRepo extends JpaRepository<Sales,Long> {
             @Param("endDate") LocalDate endDate,
             @Param("region") String region,
             @Param("territory") String territory,
-            @Param("area") String area
+            @Param("area") String area,
+            @Param("status") Status status,
+            @Param("isFollowUp") Boolean isFollowUp
     );
 }
