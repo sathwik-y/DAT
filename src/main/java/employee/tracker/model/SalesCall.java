@@ -26,7 +26,7 @@ public class SalesCall {
 
     @ManyToOne
     @JoinColumn(name="sale_id")
-    @JsonIgnoreProperties({"salesCalls"})
+    @JsonIgnoreProperties({"salesCalls","createdBy","product"})
     private Sales sale;
     private String notes;
     @Enumerated(EnumType.STRING)
@@ -35,7 +35,7 @@ public class SalesCall {
 
     @ManyToOne
     @JoinColumn(name="user_id")
-    @JsonIgnoreProperties({"salesCalls"})
+    @JsonIgnoreProperties({"salesCalls","sale","recruitments"})
     private Users loggedBy;
 
     @PrePersist

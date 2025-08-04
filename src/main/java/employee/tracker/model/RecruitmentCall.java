@@ -31,10 +31,11 @@ public class RecruitmentCall {
     @JoinColumn(name = "sale_id")
     @JsonIgnoreProperties({"recruitmentCalls"})
     private Recruitment recruitment;
-    private String notes;
+
 
     @Enumerated(EnumType.STRING)
     private Status status; // ENUM
+    private String notes;
 
     @ManyToOne
     private Users loggedBy;

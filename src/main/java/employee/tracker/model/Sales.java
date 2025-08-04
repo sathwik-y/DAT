@@ -39,10 +39,10 @@ public class Sales {
 
     @ManyToOne
     @JoinColumn(name="created_by_id") // set nullable= false later
-    @JsonIgnoreProperties({"sales", "recruitments"})
+    @JsonIgnoreProperties({"sales", "recruitments","salesCalls"})
     private Users createdBy;
 
-    @OneToMany(mappedBy = "sale")
+    @OneToMany(mappedBy = "sale", cascade = CascadeType.PERSIST)
     @JsonIgnoreProperties({"sale"})
     private List<SalesCall> salesCalls;
 

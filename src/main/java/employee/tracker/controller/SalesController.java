@@ -3,9 +3,6 @@ package employee.tracker.controller;
 import employee.tracker.dto.NewSalesDTO;
 import employee.tracker.dto.SalesFilterDTO;
 import employee.tracker.model.Sales;
-import employee.tracker.model.SalesCall;
-import employee.tracker.repository.ProductRepo;
-import employee.tracker.service.SalesCallService;
 import employee.tracker.service.SalesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,8 +19,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SalesController{
     private final SalesService salesService;
-    private final SalesCallService salesCallService;
-    private final ProductRepo productRepo;
 
     @PostMapping("/new-call")
     public ResponseEntity<Sales> createNewSale(@RequestBody NewSalesDTO newSalesDTO){
@@ -31,35 +26,10 @@ public class SalesController{
         String username = authentication.getName();
 
         try{
-
-            // Set the new sales entity
-            Sales newSale = Sales.builder()
-                    .name(newSalesDTO.getName())
-                    .phoneNo(newSalesDTO.getPhoneNo())
-                    .annualIncome(newSalesDTO.getAnnualIncome())
-                    .gender(newSalesDTO.getGender())
-                    .age(newSalesDTO.getAge())
-                    .dob(newSalesDTO.getDob())
-                    .maritalStatus(newSalesDTO.getMaritalStatus())
-                    .occupation(newSalesDTO.getOccupation())
-                    .product(productRepo.getReferenceById(newSalesDTO.getProductId()))
-                    .build();
-
-            // Set the new Sales Call entity
-            SalesCall newSalesCall = SalesCall.builder()
-                    .followUpDate(newSalesDTO.getFollowUpDate())
-                    .notes(newSalesDTO.getNotes())
-                    .status(newSalesDTO.getStatus())
-                    .isFollowUp(false)
-                    .build();
-
-            newSale.setSalesCalls(List.of(newSalesCall)); // this will always create a new list as this is a new call
-            newSalesCall.setSale(newSale);
-
-            Sales savedSale = salesService.createNewSale(newSale,username);
-            salesCallService.createNewCall(newSalesCall,username);
+            Sales savedSale = salesService.createNewSale(newSalesDTO,username);
             return new ResponseEntity<>(savedSale,HttpStatus.CREATED);
         }catch(Exception e){
+            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }

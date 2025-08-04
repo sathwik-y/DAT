@@ -1,8 +1,11 @@
 package employee.tracker.service;
 
+import employee.tracker.dto.NewSalesDTO;
 import employee.tracker.dto.SalesFilterDTO;
 import employee.tracker.model.Sales;
+import employee.tracker.model.SalesCall;
 import employee.tracker.model.Users;
+import employee.tracker.repository.ProductRepo;
 import employee.tracker.repository.SalesRepo;
 import employee.tracker.repository.UsersRepo;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,13 +20,37 @@ import java.util.List;
 public class SalesService {
     private final SalesRepo salesRepo;
     private final UsersRepo usersRepo;
+    private final ProductRepo productRepo;
 
     @Transactional
-    public Sales createNewSale(Sales newSale, String username) {
+    public Sales createNewSale(NewSalesDTO newSalesDTO, String username) {
         Users user = usersRepo.findByUserName(username);
         if (user == null) throw new RuntimeException("User not found: " + username);
-        newSale.setCreatedBy(user);
 
+
+        Sales newSale = Sales.builder()
+                .name(newSalesDTO.getName())
+                .phoneNo(newSalesDTO.getPhoneNo())
+                .annualIncome(newSalesDTO.getAnnualIncome())
+                .gender(newSalesDTO.getGender())
+                .age(newSalesDTO.getAge())
+                .dob(newSalesDTO.getDob())
+                .maritalStatus(newSalesDTO.getMaritalStatus())
+                .occupation(newSalesDTO.getOccupation())
+                .product(productRepo.findById(newSalesDTO.getProductId()).orElseThrow(() -> new RuntimeException("Product not found")))
+                .createdBy(user)
+                .build();
+
+        SalesCall newSalesCall = SalesCall.builder()
+                .followUpDate(newSalesDTO.getFollowUpDate())
+                .notes(newSalesDTO.getNotes())
+                .status(newSalesDTO.getStatus())
+                .isFollowUp(false)
+                .loggedBy(user)
+                .sale(newSale)
+                .build();
+
+        newSale.setSalesCalls(new ArrayList<>(List.of(newSalesCall)));
         Sales savedSale = salesRepo.save(newSale);
 
         if (user.getSales() == null) {
@@ -31,6 +58,10 @@ public class SalesService {
         }
         user.getSales().add(savedSale);
 
+        if(user.getSalesCalls()==null){
+            user.setSalesCalls(new ArrayList<>());
+        }
+        user.getSalesCalls().add(savedSale.getSalesCalls().getFirst());
         return savedSale;
     }
 

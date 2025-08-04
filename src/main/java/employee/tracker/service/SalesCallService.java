@@ -39,20 +39,6 @@ public class SalesCallService {
         return savedCall;
     }
 
-
-    @Transactional
-    public void createNewCall(SalesCall newSalesCall, String username) {
-        Users user = usersRepo.findByUserName(username);
-        if (user == null) throw new RuntimeException("User not found: " + username);
-
-        newSalesCall.setLoggedBy(user);
-        SalesCall newCall = salesCallRepo.save(newSalesCall);
-        if (user.getSalesCalls() == null) {
-            user.setSalesCalls(new ArrayList<>());  // Initialize if null
-        }
-        user.getSalesCalls().add(newCall);
-    }
-
     public List<SalesCall> getZonalSalesCalls(String username, SalesFilterDTO filters) {
         Users user = usersRepo.findByUserName(username);
         return salesCallRepo.findZonalSalesCalls(
