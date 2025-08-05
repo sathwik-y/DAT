@@ -27,7 +27,7 @@ public class SalesService {
         Users user = usersRepo.findByUserName(username);
         if (user == null) throw new RuntimeException("User not found: " + username);
 
-
+        // Build the Sale object from the DTO
         Sales newSale = Sales.builder()
                 .name(newSalesDTO.getName())
                 .phoneNo(newSalesDTO.getPhoneNo())
@@ -41,6 +41,7 @@ public class SalesService {
                 .createdBy(user)
                 .build();
 
+        // Build the SalesCall object from the DTO
         SalesCall newSalesCall = SalesCall.builder()
                 .followUpDate(newSalesDTO.getFollowUpDate())
                 .notes(newSalesDTO.getNotes())

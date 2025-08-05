@@ -58,6 +58,9 @@ public class Users {
     private List<SalesCall> salesCalls;
     // TODO: Either seperate the tables based on the role, because those who are at the higher position might not enter anything on their own and they might just track the data. So we can seperate them or leave them be.
 
+    @OneToMany(fetch=FetchType.LAZY,mappedBy = "loggedBy",orphanRemoval = false)
+    @JsonManagedReference
+    private List<RecruitmentCall> recruitmentCalls;
 
 
 }

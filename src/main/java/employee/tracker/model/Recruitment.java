@@ -1,6 +1,7 @@
 package employee.tracker.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import employee.tracker.enums.IMOptedPosition;
 import employee.tracker.enums.LeadSources;
 import jakarta.persistence.*;
@@ -38,7 +39,7 @@ public class Recruitment {
     private String competingCompany; // Only if the above one is yes
 
     private IMOptedPosition optedPosition; // ENUM
-
+    private LocalDateTime createdAt;
     private String referredBy; // Self/Other IMs
 
     @Enumerated(EnumType.STRING)
@@ -46,12 +47,18 @@ public class Recruitment {
 
     @ManyToOne
     @JoinColumn(name="created_by_id")
-    @JsonIgnoreProperties({"sales", "recruitments"})
+    @JsonBackReference
     private Users createdBy;
 
-    @OneToMany(mappedBy = "recruitment")
-    @JsonIgnoreProperties({"recruitment"})
+    @OneToMany(mappedBy = "recruitment",cascade = CascadeType.PERSIST)
+    @JsonManagedReference
     private List<RecruitmentCall> recruitmentCalls;
 
+
+    @PrePersist
+    protected void onCreate(){
+        this.createdAt = LocalDateTime.now();
+//        this.updatedAt = LocalDateTime.now();
+    }
 }
 
