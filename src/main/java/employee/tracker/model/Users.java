@@ -1,7 +1,6 @@
 package employee.tracker.model;
 
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import employee.tracker.enums.Region;
 import employee.tracker.enums.Role;
 import employee.tracker.enums.Territory;
@@ -47,14 +46,15 @@ public class Users {
     private String gender;
 
     @OneToMany(fetch=FetchType.LAZY,mappedBy = "createdBy",orphanRemoval = false)
+    @JsonManagedReference
     private List<Sales> sales; // Because one user can make many sales
 
     @OneToMany(fetch=FetchType.LAZY, mappedBy = "createdBy", orphanRemoval = false)
-    @JsonIgnoreProperties({"createdBy"})
+    @JsonManagedReference
     private List<Recruitment> recruitments; // Same here
 
     @OneToMany(fetch=FetchType.LAZY,mappedBy = "loggedBy",orphanRemoval = false)
-    @JsonIgnoreProperties({"loggedBy"})
+    @JsonManagedReference
     private List<SalesCall> salesCalls;
     // TODO: Either seperate the tables based on the role, because those who are at the higher position might not enter anything on their own and they might just track the data. So we can seperate them or leave them be.
 

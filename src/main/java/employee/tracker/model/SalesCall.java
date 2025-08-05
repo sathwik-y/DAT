@@ -1,6 +1,6 @@
 package employee.tracker.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import employee.tracker.enums.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -26,7 +26,7 @@ public class SalesCall {
 
     @ManyToOne
     @JoinColumn(name="sale_id")
-    @JsonIgnoreProperties({"salesCalls","createdBy","product"})
+    @JsonBackReference
     private Sales sale;
     private String notes;
     @Enumerated(EnumType.STRING)
@@ -35,7 +35,7 @@ public class SalesCall {
 
     @ManyToOne
     @JoinColumn(name="user_id")
-    @JsonIgnoreProperties({"salesCalls","sale","recruitments"})
+    @JsonBackReference
     private Users loggedBy;
 
     @PrePersist

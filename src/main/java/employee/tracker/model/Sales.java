@@ -1,6 +1,7 @@
 package employee.tracker.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,16 +35,18 @@ public class Sales {
 //    private LocalDateTime updatedAt;
     @ManyToOne
     @JoinColumn(name="product_id")
+    @JsonBackReference
     private Products product; // Need to ask
     // Can be kept because one customer can purchase many products. Might have to remove it if each new sales call is a different entry.
 
     @ManyToOne
     @JoinColumn(name="created_by_id") // set nullable= false later
-    @JsonIgnoreProperties({"sales", "recruitments","salesCalls"})
+    @JsonBackReference
     private Users createdBy;
 
+
     @OneToMany(mappedBy = "sale", cascade = CascadeType.PERSIST)
-    @JsonIgnoreProperties({"sale"})
+    @JsonManagedReference
     private List<SalesCall> salesCalls;
 
     //TODO: Add Premium Pitched

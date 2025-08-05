@@ -1,10 +1,8 @@
 package employee.tracker.model;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -32,5 +31,7 @@ public class Products {
     private String note;
     // TODO: Can map each product to the customers who purchased this product
 
-
+    @OneToMany(mappedBy = "product")
+    @JsonManagedReference
+    private List<Sales> sale;
 }
