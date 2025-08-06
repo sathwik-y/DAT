@@ -1,7 +1,6 @@
 package employee.tracker.controller;
 
 import employee.tracker.dto.SalesFilterDTO;
-import employee.tracker.model.Sales;
 import employee.tracker.model.SalesCall;
 import employee.tracker.service.SalesCallService;
 import lombok.RequiredArgsConstructor;
@@ -54,8 +53,8 @@ public class SalesCallController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         try{
-            List<SalesCall> allRegionalSales = salesCallService.getRegionalSalesCalls(username,filters);
-            return new ResponseEntity<>(allRegionalSales,HttpStatus.OK);
+            List<SalesCall> allRegionalSalesCalls = salesCallService.getRegionalSalesCalls(username,filters);
+            return new ResponseEntity<>(allRegionalSalesCalls,HttpStatus.OK);
         }catch(Exception e){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -67,8 +66,8 @@ public class SalesCallController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         try{
-            List<SalesCall> allTerritorialSales = salesCallService.getTerritorialSalesCalls(username,filters);
-            return new ResponseEntity<>(allTerritorialSales,HttpStatus.OK);
+            List<SalesCall> allTerritorialSalesCalls = salesCallService.getTerritorialSalesCalls(username,filters);
+            return new ResponseEntity<>(allTerritorialSalesCalls,HttpStatus.OK);
         }catch(Exception e){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -76,12 +75,12 @@ public class SalesCallController {
 
     @PreAuthorize("hasRole('AM')")
     @GetMapping("/area")
-    public ResponseEntity<List<SalesCall>> getAllSalesByArea(@RequestBody SalesFilterDTO filters){
+    public ResponseEntity<List<SalesCall>> getAllSalesCallsByArea(@RequestBody SalesFilterDTO filters){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         try{
-            List<SalesCall> allAreaSales = salesCallService.getAreaSalesCalls(username,filters);
-            return new ResponseEntity<>(allAreaSales,HttpStatus.OK);
+            List<SalesCall> allAreaSalesCalls = salesCallService.getAreaSalesCalls(username,filters);
+            return new ResponseEntity<>(allAreaSalesCalls,HttpStatus.OK);
         }catch(Exception e){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -91,8 +90,8 @@ public class SalesCallController {
     @GetMapping("/all")
     public ResponseEntity<List<SalesCall>> getAllSales(@RequestBody SalesFilterDTO filters){
         try{
-            List<SalesCall> allSales = salesCallService.getAllSalesCalls(filters);
-            return new ResponseEntity<>(allSales,HttpStatus.OK);
+            List<SalesCall> allSalesCalls = salesCallService.getAllSalesCalls(filters);
+            return new ResponseEntity<>(allSalesCalls,HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
