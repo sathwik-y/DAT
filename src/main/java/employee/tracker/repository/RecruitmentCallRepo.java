@@ -1,71 +1,80 @@
 package employee.tracker.repository;
 
-import employee.tracker.enums.*;
-import employee.tracker.model.RecruitmentCall;
+import java.time.LocalDate;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
-import java.util.List;
+import employee.tracker.enums.Area;
+import employee.tracker.enums.Region;
+import employee.tracker.enums.Role;
+import employee.tracker.enums.Status;
+import employee.tracker.enums.Territory;
+import employee.tracker.enums.Zone;
+import employee.tracker.model.RecruitmentCall;
 
 @Repository
 public interface RecruitmentCallRepo extends JpaRepository<RecruitmentCall,Long> {
 
-    @Query("SELECT r FROM RecruitmentCall r " +
-            "WHERE r.loggedBy.zone=:zone " +
-            "AND r.loggedBy.role!=:role " +
-            "AND (:startDate is NULL OR r.createdAt>= :startDate)" +
-            "AND (:endDate is NULL or r.createdAt<=:endDate)" +
-            "AND (:region is NULL or r.loggedBy.region = :region) " +
-            "AND (:territory is NULL or r.loggedBy.territory= :territory)" +
-            "AND  (:area is NULL or r.loggedBy.area = :area) " +
-            "AND (:status is NULL or r.status = :status) " +
-            "AND (:isFollowUp is NULL or r.isFollowUp = :isFollowUp)"
+    @Query("SELECT DISTINCT rc FROM RecruitmentCall rc " +
+            "JOIN FETCH rc.loggedBy u " +
+            "WHERE u.zone=:zone " +
+            "AND u.role!=:role " +
+            "AND (:startDate is NULL OR rc.createdAt>= :startDate)" +
+            "AND (:endDate is NULL or rc.createdAt<=:endDate)" +
+            "AND (:region is NULL or u.region = :region) " +
+            "AND (:territory is NULL or u.territory= :territory)" +
+            "AND  (:area is NULL or u.area = :area) " +
+            "AND (:status is NULL or rc.status = :status) " +
+            "AND (:isFollowUp is NULL or rc.isFollowUp = :isFollowUp)"
     )
     List<RecruitmentCall> findZonalRecruitmentCalls(
             @Param("zone") Zone zone,
             @Param("role") Role role,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
-            @Param("region") String region,
-            @Param("territory") String territory,
-            @Param("area") String area,
+            @Param("region") Region region,
+            @Param("territory") Territory territory,
+            @Param("area") Area area,
             @Param("status") Status status,
             @Param("isFollowUp") Boolean isFollowUp
     );
 
 
 
-    @Query("SELECT r FROM RecruitmentCall r " +
-            "WHERE r.loggedBy.region=:region " +
-            "AND r.loggedBy.role!=:role " +
-            "AND (:startDate is NULL OR r.createdAt>= :startDate)" +
-            "AND (:endDate is NULL or r.createdAt<=:endDate)" +
+    @Query("SELECT DISTINCT rc FROM RecruitmentCall rc " +
+            "JOIN FETCH rc.loggedBy u " +
+            "WHERE u.region=:region " +
+            "AND u.role!=:role " +
+            "AND (:startDate is NULL OR rc.createdAt>= :startDate)" +
+            "AND (:endDate is NULL or rc.createdAt<=:endDate)" +
             // TODO: Might have to change a few filters based on the hierarchy
-            "AND (:status is NULL or r.status = :status) " +
-            "AND (:isFollowUp is NULL or r.isFollowUp = :isFollowUp)" +
-            "AND (:area is NULL or r.loggedBy.area = :area) " +
-            "AND (:territory is NULL or r.loggedBy.territory = :territory)"
+            "AND (:status is NULL or rc.status = :status) " +
+            "AND (:isFollowUp is NULL or rc.isFollowUp = :isFollowUp)" +
+            "AND (:area is NULL or u.area = :area) " +
+            "AND (:territory is NULL or u.territory = :territory)"
     )
     List<RecruitmentCall> findRegionalRecruitmentCalls(
             @Param("region") Region createdByRegion,
             @Param("role") Role role,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
-            @Param("area") String area,
-            @Param("territory") String territory,
+            @Param("area") Area area,
+            @Param("territory") Territory territory,
             @Param("status") Status status,
             @Param("isFollowUp") Boolean isFollowUp
     );
 
-    @Query("SELECT r FROM RecruitmentCall r " +
-            "WHERE r.loggedBy.territory = :territory " +
-            "AND (:startDate is NULL or r.createdAt>=:startDate)" +
-            "AND (:endDate is NULL or r.createdAt<=:endDate)" +
-            "AND (:status is NULL or r.status = :status)" +
-            "AND (:isFollowUp is NULL or r.isFollowUp = :isFollowUp)"
+    @Query("SELECT DISTINCT rc FROM RecruitmentCall rc " +
+            "JOIN FETCH rc.loggedBy u " +
+            "WHERE u.territory = :territory " +
+            "AND (:startDate is NULL or rc.createdAt>=:startDate)" +
+            "AND (:endDate is NULL or rc.createdAt<=:endDate)" +
+            "AND (:status is NULL or rc.status = :status)" +
+            "AND (:isFollowUp is NULL or rc.isFollowUp = :isFollowUp)"
     )
     List<RecruitmentCall> findTerritorialRecruitmentCalls(
             @Param("territory") Territory createdByTerritory,
@@ -76,45 +85,47 @@ public interface RecruitmentCallRepo extends JpaRepository<RecruitmentCall,Long>
             @Param("isFollowUp") Boolean isFollowUp
     );
 
-    @Query("SELECT r FROM RecruitmentCall r " +
-            "WHERE r.loggedBy.area=:area " +
-            "AND r.loggedBy.role!=:role " +
-            "AND (:startDate is NULL OR r.createdAt>= :startDate) " +
-            "AND (:endDate is NULL or r.createdAt<=:endDate)" +
-            "AND (:territory is NULL or r.loggedBy.territory = :territory)" +
-            "AND (:status is NULL or r.status = :status) " +
-            "AND (:isFollowUp is NULL or r.isFollowUp = :isFollowUp)"
+    @Query("SELECT DISTINCT rc FROM RecruitmentCall rc " +
+            "JOIN FETCH rc.loggedBy u " +
+            "WHERE u.area=:area " +
+            "AND u.role!=:role " +
+            "AND (:startDate is NULL OR rc.createdAt>= :startDate) " +
+            "AND (:endDate is NULL or rc.createdAt<=:endDate)" +
+            "AND (:territory is NULL or u.territory = :territory)" +
+            "AND (:status is NULL or rc.status = :status) " +
+            "AND (:isFollowUp is NULL or rc.isFollowUp = :isFollowUp)"
     )
     List<RecruitmentCall> findAreaRecruitmentCalls(
-            @Param("area") String createdByArea,
+            @Param("area") Area createdByArea,
             @Param("role") Role role,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
-            @Param("territory") String territory,
+            @Param("territory") Territory territory,
             @Param("status") Status status,
             @Param("isFollowUp") Boolean isFollowUp
     );
 
 
-    @Query("SELECT r FROM RecruitmentCall r " +
-            "WHERE (:zone is NULL OR r.loggedBy.zone=:zone)" +
+    @Query("SELECT DISTINCT rc FROM RecruitmentCall rc " +
+            "JOIN FETCH rc.loggedBy u " +
+            "WHERE (:zone is NULL OR u.zone=:zone)" +
 //            "AND s.createdBy.role!=:role " +
-            "AND (:startDate is NULL OR r.createdAt>= :startDate)" +
-            "AND (:endDate is NULL or r.createdAt<=:endDate)" +
-            "AND (:region is NULL or r.loggedBy.region = :region) " +
-            "AND (:territory is NULL or r.loggedBy.territory= :territory)" +
-            "AND (:area is NULL or r.loggedBy.area = :area) " +
-            "AND (:status is NULL or r.status = :status) " +
-            "AND (:isFollowUp is NULL or r.isFollowUp = :isFollowUp) "
+            "AND (:startDate is NULL OR rc.createdAt>= :startDate)" +
+            "AND (:endDate is NULL or rc.createdAt<=:endDate)" +
+            "AND (:region is NULL or u.region = :region) " +
+            "AND (:territory is NULL or u.territory= :territory)" +
+            "AND (:area is NULL or u.area = :area) " +
+            "AND (:status is NULL or rc.status = :status) " +
+            "AND (:isFollowUp is NULL or rc.isFollowUp = :isFollowUp) "
     )
     List<RecruitmentCall> findNationalRecruitmentCalls(
-            @Param("zone") String zone,
+            @Param("zone") Zone zone,
 //            @Param("role") String role,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
-            @Param("region") String region,
-            @Param("territory") String territory,
-            @Param("area") String area,
+            @Param("region") Region region,
+            @Param("territory") Territory territory,
+            @Param("area") Area area,
             @Param("status") Status status,
             @Param("isFollowUp") Boolean isFollowUp
     );

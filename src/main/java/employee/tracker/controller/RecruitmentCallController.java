@@ -35,7 +35,7 @@ public class RecruitmentCallController {
     }
 
     @PreAuthorize("hasRole('ZH')")
-    @GetMapping("/zone")
+    @PostMapping("/zone")
     public ResponseEntity<List<RecruitmentCall>> getAllRecruitmentCallsByZone(@RequestBody RecruitmentFilterDTO filters){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
@@ -48,7 +48,7 @@ public class RecruitmentCallController {
     }
 
     @PreAuthorize("hasAnyRole('RH','ARH')")
-    @GetMapping("/regional")
+    @PostMapping("/regional")
     public ResponseEntity<List<RecruitmentCall>> getAllRecruitmentCallsByRegion(@RequestBody RecruitmentFilterDTO filters){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
@@ -61,7 +61,7 @@ public class RecruitmentCallController {
     }
 
     @PreAuthorize("hasRole('TM')")
-    @GetMapping("/territorial")
+    @PostMapping("/territorial")
     public ResponseEntity<List<RecruitmentCall>> getAllRecruitmentCallsByTerritory(@RequestBody RecruitmentFilterDTO filters){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
@@ -74,7 +74,7 @@ public class RecruitmentCallController {
     }
 
     @PreAuthorize("hasRole('AM')")
-    @GetMapping("/area")
+    @PostMapping("/area")
     public ResponseEntity<List<RecruitmentCall>> getAllRecruitmentCallsByArea(@RequestBody RecruitmentFilterDTO filters){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
@@ -87,7 +87,7 @@ public class RecruitmentCallController {
     }
 
     @PreAuthorize("hasRole('NH')")
-    @GetMapping("/all")
+    @PostMapping("/all")
     public ResponseEntity<List<RecruitmentCall>> getAllRecruitmentCalls(@RequestBody RecruitmentFilterDTO filters){
         try{
             List<RecruitmentCall> allRecruitmentCalls = recruitmentCallService.getAllRecruitmentCalls(filters);

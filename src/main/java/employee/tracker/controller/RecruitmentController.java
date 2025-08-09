@@ -1,18 +1,22 @@
 package employee.tracker.controller;
 
-import employee.tracker.dto.NewRecruitmentDTO;
-import employee.tracker.dto.RecruitmentFilterDTO;
-import employee.tracker.model.Recruitment;
-import employee.tracker.service.RecruitmentService;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import employee.tracker.dto.NewRecruitmentDTO;
+import employee.tracker.dto.RecruitmentFilterDTO;
+import employee.tracker.model.Recruitment;
+import employee.tracker.service.RecruitmentService;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,7 +38,7 @@ public class RecruitmentController {
 
 
     @PreAuthorize("hasRole('ZH')")
-    @GetMapping("/zone")
+    @PostMapping("/zone")
     public ResponseEntity<List<Recruitment>> getAllRecruitmentsByZone(@RequestBody RecruitmentFilterDTO filters){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
@@ -47,7 +51,7 @@ public class RecruitmentController {
     }
 
     @PreAuthorize("hasAnyRole('RH','ARH')")
-    @GetMapping("/regional")
+    @PostMapping("/regional")
     public ResponseEntity<List<Recruitment>> getAllRecruitmentsByRegion(@RequestBody RecruitmentFilterDTO filters){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
@@ -60,7 +64,7 @@ public class RecruitmentController {
     }
 
     @PreAuthorize("hasRole('TM')")
-    @GetMapping("/territorial")
+    @PostMapping("/territorial")
     public ResponseEntity<List<Recruitment>> getAllRecruitmentsByTerritory(@RequestBody RecruitmentFilterDTO filters){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
@@ -73,7 +77,7 @@ public class RecruitmentController {
     }
 
     @PreAuthorize("hasRole('AM')")
-    @GetMapping("/area")
+    @PostMapping("/area")
     public ResponseEntity<List<Recruitment>> getAllRecruitmentsByArea(@RequestBody RecruitmentFilterDTO filters){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
@@ -86,7 +90,7 @@ public class RecruitmentController {
     }
 
     @PreAuthorize("hasRole('NH')")
-    @GetMapping("/all")
+    @PostMapping("/all")
     public ResponseEntity<List<Recruitment>> getAllRecruitments(@RequestBody RecruitmentFilterDTO filters){
         try{
             List<Recruitment> allRecruitments = recruitmentService.getAllRecruitments(filters);

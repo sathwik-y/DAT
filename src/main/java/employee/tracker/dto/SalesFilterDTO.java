@@ -1,7 +1,7 @@
 package employee.tracker.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import employee.tracker.enums.Status;
+import employee.tracker.enums.*;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -15,10 +15,10 @@ public class SalesFilterDTO {
     private LocalDate endDate;
 
     // Location filters
-    private String zone;
-    private String region;
-    private String territory;
-    private String area;
+    private Zone zone;
+    private Region region;
+    private Territory territory;
+    private Area area;
 
 
 

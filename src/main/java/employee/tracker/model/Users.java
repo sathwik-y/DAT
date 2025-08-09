@@ -1,17 +1,27 @@
 package employee.tracker.model;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import employee.tracker.enums.Area;
 import employee.tracker.enums.Region;
 import employee.tracker.enums.Role;
 import employee.tracker.enums.Territory;
 import employee.tracker.enums.Zone;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Entity
 @Data
@@ -42,7 +52,10 @@ public class Users {
 
     @Enumerated(EnumType.STRING)
     private Zone zone;
-    private String area;
+
+    @Enumerated(EnumType.STRING)
+    private Area area;
+    
     private String gender;
 
     @OneToMany(fetch=FetchType.LAZY,mappedBy = "createdBy",orphanRemoval = false)

@@ -1,18 +1,22 @@
 package employee.tracker.controller;
 
-import employee.tracker.dto.NewSalesDTO;
-import employee.tracker.dto.SalesFilterDTO;
-import employee.tracker.model.Sales;
-import employee.tracker.service.SalesService;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import employee.tracker.dto.NewSalesDTO;
+import employee.tracker.dto.SalesFilterDTO;
+import employee.tracker.model.Sales;
+import employee.tracker.service.SalesService;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/sales")
@@ -36,7 +40,7 @@ public class SalesController{
 
     // This to get all the sales of the logged-in user
     @PreAuthorize("hasRole('ZH')")
-    @GetMapping("/zone")
+    @PostMapping("/zone")
     public ResponseEntity<List<Sales>> getAllSalesByZone(@RequestBody SalesFilterDTO filters){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
@@ -49,7 +53,7 @@ public class SalesController{
     }
 
     @PreAuthorize("hasAnyRole('RH','ARH')")
-    @GetMapping("/regional")
+    @PostMapping("/regional")
     public ResponseEntity<List<Sales>> getAllSalesByRegion(@RequestBody SalesFilterDTO filters){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
@@ -62,7 +66,7 @@ public class SalesController{
     }
 
     @PreAuthorize("hasRole('TM')")
-    @GetMapping("/territorial")
+    @PostMapping("/territorial")
     public ResponseEntity<List<Sales>> getAllSalesByTerritory(@RequestBody SalesFilterDTO filters){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
@@ -75,7 +79,7 @@ public class SalesController{
     }
 
     @PreAuthorize("hasRole('AM')")
-    @GetMapping("/area")
+    @PostMapping("/area")
     public ResponseEntity<List<Sales>> getAllSalesByArea(@RequestBody SalesFilterDTO filters){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
@@ -88,7 +92,7 @@ public class SalesController{
     }
 
     @PreAuthorize("hasRole('NH')")
-    @GetMapping("/all")
+    @PostMapping("/all")
     public ResponseEntity<List<Sales>> getAllSales(@RequestBody SalesFilterDTO filters){
         try{
             List<Sales> allSales = salesService.getAllSales(filters);
