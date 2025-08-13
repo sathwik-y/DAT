@@ -2,6 +2,7 @@ package employee.tracker.repository;
 
 import employee.tracker.enums.*;
 import employee.tracker.model.Recruitment;
+import employee.tracker.model.Users;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -136,5 +137,7 @@ public interface RecruitmentRepo extends JpaRepository<Recruitment,Long> {
             @Param("status") Status status,
             @Param("isFollowUp") Boolean isFollowUp
     );
+
+    List<Recruitment> findByCreatedBy(Users createdBy);
 }
 

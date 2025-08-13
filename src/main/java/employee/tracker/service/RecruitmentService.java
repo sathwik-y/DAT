@@ -132,5 +132,10 @@ public class RecruitmentService {
                 filters.getIsFollowUp()
         );
     }
+
+    public List<Recruitment> findMyRecruitment(String username) {
+        Users user = usersRepo.findByUserName(username);
+        return recruitmentRepo.findByCreatedBy(user);
+    }
 }
 
