@@ -139,4 +139,8 @@ public class SalesService {
         );
     }
 
+    public List<Sales> findMySales(String username) {
+        Users user = usersRepo.findByUserName(username);
+        return salesRepo.findByCreatedBy(user);
+    }
 }

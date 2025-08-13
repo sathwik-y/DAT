@@ -7,10 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import employee.tracker.dto.NewSalesDTO;
 import employee.tracker.dto.SalesFilterDTO;
@@ -103,4 +100,17 @@ public class SalesController{
     }
 
     //TODO: Get sales by user
+
+    @GetMapping("/getMySales")
+    public ResponseEntity<List<Sales>> findMySales(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        try{
+            List<Sales> sale = salesService.findMySales(username);
+            return new ResponseEntity<>(sale,HttpStatus.OK);
+        }catch(Exception e){
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
 }

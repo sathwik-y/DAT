@@ -47,11 +47,11 @@ public class Recruitment {
 
     @ManyToOne
     @JoinColumn(name="created_by_id")
-    @JsonBackReference
+    @JsonBackReference("user-recruitments")
     private Users createdBy;
 
     @OneToMany(mappedBy = "recruitment",cascade = CascadeType.PERSIST)
-    @JsonManagedReference
+    @JsonManagedReference("recruitment-recruitmentCalls")
     private List<RecruitmentCall> recruitmentCalls;
 
 

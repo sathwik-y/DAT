@@ -39,7 +39,7 @@ public class RecruitmentCall {
 
     @ManyToOne
     @JoinColumn(name = "recruitment_id")
-    @JsonBackReference
+    @JsonBackReference("recruitment-recruitmentCalls")
     private Recruitment recruitment;
 
 
@@ -48,7 +48,7 @@ public class RecruitmentCall {
     private String notes;
 
     @ManyToOne
-    @JsonBackReference
+    @JsonBackReference("user-recruitmentCalls")
     private Users loggedBy;
 
     @PrePersist

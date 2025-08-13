@@ -32,6 +32,6 @@ public class Products {
     // TODO: Can map each product to the customers who purchased this product
 
     @OneToMany(mappedBy = "product")
-    @JsonManagedReference
+    @JsonManagedReference("product-sales")
     private List<Sales> sale;
 }

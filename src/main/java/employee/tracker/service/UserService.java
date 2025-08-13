@@ -1,5 +1,6 @@
 package employee.tracker.service;
 
+import employee.tracker.model.Sales;
 import employee.tracker.model.Users;
 import employee.tracker.repository.UsersRepo;
 import employee.tracker.utility.JwtUtil;
@@ -9,6 +10,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -35,4 +38,6 @@ public class UserService {
     public Users findByUserName(String userName){
         return userRepo.findByUserName(userName);
     }
+
+
 }

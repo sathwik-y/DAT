@@ -26,7 +26,7 @@ public class SalesCall {
 
     @ManyToOne
     @JoinColumn(name="sale_id")
-    @JsonBackReference
+    @JsonBackReference("sale-salesCall")
     private Sales sale;
     private String notes;
     @Enumerated(EnumType.STRING)
@@ -35,7 +35,7 @@ public class SalesCall {
 
     @ManyToOne
     @JoinColumn(name="user_id")
-    @JsonBackReference
+    @JsonBackReference("user-salesCall")
     private Users loggedBy;
 
     @PrePersist

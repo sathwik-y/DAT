@@ -34,6 +34,7 @@ public class SalesCallController {
             SalesCall newCall = salesCallService.createSalesCall(salesCall,saleId,username);
             return new ResponseEntity<>(newCall,HttpStatus.CREATED);
         }catch(Exception e){
+            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 

@@ -59,20 +59,20 @@ public class Users {
     private String gender;
 
     @OneToMany(fetch=FetchType.LAZY,mappedBy = "createdBy",orphanRemoval = false)
-    @JsonManagedReference
+    @JsonManagedReference("user-sales")
     private List<Sales> sales; // Because one user can make many sales
 
     @OneToMany(fetch=FetchType.LAZY, mappedBy = "createdBy", orphanRemoval = false)
-    @JsonManagedReference
+    @JsonManagedReference("user-recruitments")
     private List<Recruitment> recruitments; // Same here
 
     @OneToMany(fetch=FetchType.LAZY,mappedBy = "loggedBy",orphanRemoval = false)
-    @JsonManagedReference
+    @JsonManagedReference("user-salesCall")
     private List<SalesCall> salesCalls;
     // TODO: Either seperate the tables based on the role, because those who are at the higher position might not enter anything on their own and they might just track the data. So we can seperate them or leave them be.
 
     @OneToMany(fetch=FetchType.LAZY,mappedBy = "loggedBy",orphanRemoval = false)
-    @JsonManagedReference
+    @JsonManagedReference("user-recruitmentCalls")
     private List<RecruitmentCall> recruitmentCalls;
 
 

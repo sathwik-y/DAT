@@ -35,18 +35,18 @@ public class Sales {
 //    private LocalDateTime updatedAt;
     @ManyToOne
     @JoinColumn(name="product_id")
-    @JsonBackReference
+    @JsonBackReference("product-sales")
     private Products product; // Need to ask
     // Can be kept because one customer can purchase many products. Might have to remove it if each new sales call is a different entry.
 
     @ManyToOne
     @JoinColumn(name="created_by_id") // set nullable= false later
-    @JsonBackReference
+    @JsonBackReference("user-sales")
     private Users createdBy;
 
 
     @OneToMany(mappedBy = "sale", cascade = CascadeType.PERSIST)
-    @JsonManagedReference
+    @JsonManagedReference("sale-salesCall")
     private List<SalesCall> salesCalls;
 
     //TODO: Add Premium Pitched

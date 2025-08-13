@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import employee.tracker.enums.*;
+import employee.tracker.model.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -148,4 +149,6 @@ public interface SalesRepo extends JpaRepository<Sales,Long> {
             @Param("isFollowUp") Boolean isFollowUp
     );
 
+
+    List<Sales> findByCreatedBy(Users user);
 }
