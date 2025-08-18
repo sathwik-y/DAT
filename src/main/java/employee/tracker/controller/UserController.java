@@ -4,6 +4,7 @@ import employee.tracker.model.Sales;
 import employee.tracker.model.Users;
 import employee.tracker.service.UserService;
 import employee.tracker.utility.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -53,5 +54,20 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/api/auth/verify")
+    public ResponseEntity<?> verifyToken(HttpServletRequest request){
+        try{
+            String token = request.getHeader("Authorization");
+            if(token!=null && token.startsWith("Bearer ")){
+                token = token.substring(7);
+                if(jwtUtil.validateToken(token)){
+                    return ResponseEntity.ok().build();
+                }
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }catch(Exception e){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
 
 }

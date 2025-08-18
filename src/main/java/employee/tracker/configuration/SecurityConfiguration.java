@@ -32,13 +32,13 @@ public class SecurityConfiguration {
 
     private final UserDetailsService userDetailsService;
     private final JwtFilter jwtFilter;
-
+// TODO: Update the JWT TO cookie instead of local storage
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
         http.csrf(customizer -> customizer.disable());
         http.authorizeHttpRequests(request -> request
-                .requestMatchers("/register", "/login").permitAll()
+                .requestMatchers("/register", "/login","/api/auth/verify").permitAll()
                 .requestMatchers("/items/**", "/tag/**", "/notifications/**", "/dashboard").authenticated()
                 .anyRequest().authenticated());
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
@@ -68,10 +68,10 @@ public class SecurityConfiguration {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(
+                "http://localhost:5173",
                 "http://localhost:5174",
                 "http://localhost:3000",
-                "https://pkm-livid.vercel.app",
-                "https://pkm-87z5.onrender.com"
+                "http://localhost:3001"
         )); // Explicitly allow frontend origin
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type")); // Specific headers
