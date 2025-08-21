@@ -1,13 +1,17 @@
 package employee.tracker.controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import employee.tracker.enums.Role;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -78,4 +82,16 @@ public class UserController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ZH', 'RH', 'ARH', 'AM', 'NH')")
+    @GetMapping("/myTeam")
+    public ResponseEntity<List<Users>> getMyTeam(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        try {
+            List<Users> zhTeam = userService.findMyTeam(username);
+            return new ResponseEntity<>(zhTeam, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
 }

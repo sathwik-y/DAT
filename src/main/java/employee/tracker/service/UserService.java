@@ -1,5 +1,7 @@
 package employee.tracker.service;
 
+import employee.tracker.enums.Role;
+import employee.tracker.enums.Zone;
 import employee.tracker.model.Sales;
 import employee.tracker.model.Users;
 import employee.tracker.repository.UsersRepo;
@@ -40,4 +42,25 @@ public class UserService {
     }
 
 
+    public List<Users> findMyTeam(String username) {
+
+
+        Users manager = userRepo.findByUserName(username);
+
+        return switch (manager.getRole()) {
+            case ZH -> // Zonal Head
+                    userRepo.findByZoneAndUserNameNot(manager.getZone(), username);
+            case RH -> // Regional Head
+                    userRepo.findByRegionAndUserNameNot(manager.getRegion(), username);
+            case ARH ->
+                    userRepo.findByRegionAndUserNameNotAndRoleNot(manager.getRegion(),username, Role.RH);
+            case AM -> // Area Head
+                    userRepo.findByAreaAndUserNameNot(manager.getArea(), username);
+            case NH ->
+                    userRepo.findByUserNameNot(username);
+            default -> List.of(); // others don’t have a "team"
+        };
+
+
+    }
 }
