@@ -25,7 +25,6 @@ public class SalesCallController {
     private final SalesCallService salesCallService;
 
     // New Sales call creation has already been handles with SalesController and is already present in SalesCallService
-
     @PostMapping("/add")
     public ResponseEntity<SalesCall> addNewSalesCall(@RequestBody SalesCall salesCall,@RequestParam Long saleId){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

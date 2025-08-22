@@ -45,6 +45,7 @@ public class SalesController{
             List<Sales> allZonalSales =  salesService.getZonalSales(username,filters);
             return new ResponseEntity<>(allZonalSales,HttpStatus.OK);
         }catch(Exception e){
+            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }

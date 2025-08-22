@@ -5,14 +5,15 @@ import employee.tracker.enums.*;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class SalesFilterDTO {
     // Date filters -> Will be sent from the frontend based on the user selection
-    @JsonFormat(pattern = "dd-MM-yyyy")
-    private LocalDate startDate;
-    @JsonFormat(pattern = "dd-MM-yyyy")
-    private LocalDate endDate;
+//    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss\n")
+    private LocalDateTime startDate;
+//    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss\n")
+    private LocalDateTime endDate;
 
     // Location filters
     private Zone zone;
@@ -32,16 +33,16 @@ public class SalesFilterDTO {
     // TODO: Add pagination
 
     // Default Date range
-    public LocalDate getStartDate(){
+    public LocalDateTime getStartDate(){
         if(this.startDate ==null){
-            return LocalDate.now().withDayOfMonth(1);
+            return LocalDateTime.now().withDayOfMonth(1);
         }
         return this.startDate;
     }
 
-    public LocalDate getEndDate(){
+    public LocalDateTime getEndDate(){
         if(this.endDate==null){
-            return LocalDate.now();
+            return LocalDateTime.now();
         }
         return this.endDate;
     }

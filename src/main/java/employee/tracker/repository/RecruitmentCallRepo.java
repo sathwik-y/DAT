@@ -1,6 +1,7 @@
 package employee.tracker.repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,6 +16,9 @@ import employee.tracker.enums.Status;
 import employee.tracker.enums.Territory;
 import employee.tracker.enums.Zone;
 import employee.tracker.model.RecruitmentCall;
+
+
+// TODO: Need to update this with COALSEC like done in SalesRepo
 
 @Repository
 public interface RecruitmentCallRepo extends JpaRepository<RecruitmentCall,Long> {
@@ -34,8 +38,8 @@ public interface RecruitmentCallRepo extends JpaRepository<RecruitmentCall,Long>
     List<RecruitmentCall> findZonalRecruitmentCalls(
             @Param("zone") Zone zone,
             @Param("role") Role role,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
             @Param("region") Region region,
             @Param("territory") Territory territory,
             @Param("area") Area area,
@@ -60,8 +64,8 @@ public interface RecruitmentCallRepo extends JpaRepository<RecruitmentCall,Long>
     List<RecruitmentCall> findRegionalRecruitmentCalls(
             @Param("region") Region createdByRegion,
             @Param("role") Role role,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
             @Param("area") Area area,
             @Param("territory") Territory territory,
             @Param("status") Status status,
@@ -79,8 +83,8 @@ public interface RecruitmentCallRepo extends JpaRepository<RecruitmentCall,Long>
     List<RecruitmentCall> findTerritorialRecruitmentCalls(
             @Param("territory") Territory createdByTerritory,
 //            Role role,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
             @Param("status") Status status,
             @Param("isFollowUp") Boolean isFollowUp
     );
@@ -98,8 +102,8 @@ public interface RecruitmentCallRepo extends JpaRepository<RecruitmentCall,Long>
     List<RecruitmentCall> findAreaRecruitmentCalls(
             @Param("area") Area createdByArea,
             @Param("role") Role role,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
             @Param("territory") Territory territory,
             @Param("status") Status status,
             @Param("isFollowUp") Boolean isFollowUp
@@ -121,8 +125,8 @@ public interface RecruitmentCallRepo extends JpaRepository<RecruitmentCall,Long>
     List<RecruitmentCall> findNationalRecruitmentCalls(
             @Param("zone") Zone zone,
 //            @Param("role") String role,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
             @Param("region") Region region,
             @Param("territory") Territory territory,
             @Param("area") Area area,

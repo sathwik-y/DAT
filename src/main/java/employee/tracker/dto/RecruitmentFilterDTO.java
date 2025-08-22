@@ -5,6 +5,7 @@ import employee.tracker.enums.*;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class RecruitmentFilterDTO {
@@ -12,9 +13,9 @@ public class RecruitmentFilterDTO {
     // TODO: As of now, this is similar to SalesFilterDTO, if needed we can add recruitment specific filters. Else merge this and SalesFilterDTO
 
     @JsonFormat(pattern = "dd-MM-yyyy")
-    private LocalDate startDate;
+    private LocalDateTime startDate;
     @JsonFormat(pattern = "dd-MM-yyyy")
-    private LocalDate endDate;
+    private LocalDateTime endDate;
 
     // Location filters
     private Zone zone;
@@ -27,16 +28,16 @@ public class RecruitmentFilterDTO {
     private Boolean isFollowUp;
 
     // Default Date range
-    public LocalDate getStartDate(){
+    public LocalDateTime getStartDate(){
         if(this.startDate ==null){
-            return LocalDate.now().withDayOfMonth(1);
+            return LocalDateTime.now().withDayOfMonth(1);
         }
         return this.startDate;
     }
 
-    public LocalDate getEndDate(){
+    public LocalDateTime getEndDate(){
         if(this.endDate==null){
-            return LocalDate.now();
+            return LocalDateTime.now();
         }
         return this.endDate;
     }

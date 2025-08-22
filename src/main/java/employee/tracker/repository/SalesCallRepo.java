@@ -9,7 +9,11 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+
+
+// TODO: Need to update this with COALSEC like done in SalesRepo
 
 @Repository
 public interface SalesCallRepo extends JpaRepository<SalesCall,Long> {
@@ -19,19 +23,19 @@ public interface SalesCallRepo extends JpaRepository<SalesCall,Long> {
 //          "JOIN FETCH sc.sale s " + Can be added later if we need to fetch the Sale data of a particular call
           "WHERE u.zone=:zone " +
           "AND u.role!=:role " +
-          "AND (:startDate is NULL OR sc.createdAt>= :startDate)" +
-          "AND (:endDate is NULL OR sc.createdAt<=:endDate)" +
-          "AND (:region is NULL OR u.region = :region) " +
-          "AND (:territory is NULL OR u.territory= :territory)" +
-          "AND  (:area is NULL OR u.area = :area) " +
-          "AND (:status is NULL OR sc.status = :status) " +
-          "AND (:isFollowUp is NULL OR sc.isFollowUp = :isFollowUp)"
+          "AND (sc.createdAt>= :startDate OR :startDate is NULL  )" +
+          "AND (sc.createdAt<=:endDate OR :endDate is NULL  )" +
+          "AND (u.region = :region OR :region is NULL  ) " +
+          "AND ( u.territory= :territory OR :territory is NULL)" +
+          "AND  (u.area = :area OR :area is NULL  ) " +
+          "AND (sc.status = :status OR :status is NULL) " +
+          "AND (sc.isFollowUp = :isFollowUp OR :isFollowUp is NULL  )"
   )
   List<SalesCall> findZonalSalesCalls(
           @Param("zone") Zone zone,
           @Param("role") Role role,
-          @Param("startDate") LocalDate startDate,
-          @Param("endDate") LocalDate endDate,
+          @Param("startDate") LocalDateTime startDate,
+          @Param("endDate") LocalDateTime endDate,
           @Param("region") Region region,
           @Param("territory") Territory territory,
           @Param("area") Area area,
@@ -54,8 +58,8 @@ public interface SalesCallRepo extends JpaRepository<SalesCall,Long> {
   List<SalesCall> findRegionalSalesCalls(
           @Param("region") Region createdByRegion,
           @Param("role") Role role,
-          @Param("startDate") LocalDate startDate,
-          @Param("endDate") LocalDate endDate,
+          @Param("startDate") LocalDateTime startDate,
+          @Param("endDate") LocalDateTime endDate,
           @Param("area") Area area,
           @Param("territory") Territory territory,
           @Param("status") Status status,
@@ -74,8 +78,8 @@ public interface SalesCallRepo extends JpaRepository<SalesCall,Long> {
   List<SalesCall> findTerritorialSalesCalls(
           @Param("territory") Territory createdByTerritory,
 //            Role role,
-          @Param("startDate") LocalDate startDate,
-          @Param("endDate") LocalDate endDate,
+          @Param("startDate") LocalDateTime startDate,
+          @Param("endDate") LocalDateTime endDate,
           @Param("status") Status status,
           @Param("isFollowUp") Boolean isFollowUp
           );
@@ -93,8 +97,8 @@ public interface SalesCallRepo extends JpaRepository<SalesCall,Long> {
   List<SalesCall> findAreaSalesCalls(
           @Param("area") Area createdByArea,
           @Param("role") Role role,
-          @Param("startDate") LocalDate startDate,
-          @Param("endDate") LocalDate endDate,
+          @Param("startDate") LocalDateTime startDate,
+          @Param("endDate") LocalDateTime endDate,
           @Param("territory") Territory territory,
           @Param("status") Status status,
           @Param("isFollowUp") Boolean isFollowUp
@@ -115,8 +119,8 @@ public interface SalesCallRepo extends JpaRepository<SalesCall,Long> {
   List<SalesCall> findNationalSalesCalls(
           @Param("zone") Zone zone,
 //            @Param("role") String role,
-          @Param("startDate") LocalDate startDate,
-          @Param("endDate") LocalDate endDate,
+          @Param("startDate") LocalDateTime startDate,
+          @Param("endDate") LocalDateTime endDate,
           @Param("region") Region region,
           @Param("territory") Territory territory,
           @Param("area") Area area,
