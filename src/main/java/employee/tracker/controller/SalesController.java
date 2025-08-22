@@ -99,8 +99,6 @@ public class SalesController{
         }
     }
 
-    //TODO: Get sales by user
-
     @GetMapping("/getMySales")
     public ResponseEntity<List<Sales>> findMySales(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

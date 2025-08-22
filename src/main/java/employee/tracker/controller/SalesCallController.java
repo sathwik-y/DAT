@@ -103,5 +103,4 @@ public class SalesCallController {
         }
     }
 
-    // TODO: Get sales call By user
 }

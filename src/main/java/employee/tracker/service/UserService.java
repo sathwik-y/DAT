@@ -1,8 +1,6 @@
 package employee.tracker.service;
 
 import employee.tracker.enums.Role;
-import employee.tracker.enums.Zone;
-import employee.tracker.model.Sales;
 import employee.tracker.model.Users;
 import employee.tracker.repository.UsersRepo;
 import employee.tracker.utility.JwtUtil;
@@ -46,19 +44,19 @@ public class UserService {
 
 
         Users manager = userRepo.findByUserName(username);
-
+        if(manager==null) throw new RuntimeException("User not found: " + username);
         return switch (manager.getRole()) {
-            case ZH -> // Zonal Head
+            case ZH ->
                     userRepo.findByZoneAndUserNameNot(manager.getZone(), username);
-            case RH -> // Regional Head
+            case RH ->
                     userRepo.findByRegionAndUserNameNot(manager.getRegion(), username);
             case ARH ->
                     userRepo.findByRegionAndUserNameNotAndRoleNot(manager.getRegion(),username, Role.RH);
-            case AM -> // Area Head
+            case AM ->
                     userRepo.findByAreaAndUserNameNot(manager.getArea(), username);
             case NH ->
                     userRepo.findByUserNameNot(username);
-            default -> List.of(); // others don’t have a "team"
+            default -> List.of(); // others don’t have a team, but it will never come to this
         };
 
 

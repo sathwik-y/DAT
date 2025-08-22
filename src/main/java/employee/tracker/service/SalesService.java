@@ -97,7 +97,7 @@ public class SalesService {
                 filters.getIsFollowUp()
         );
     }
-// TODO: The thing with areas, how do we reverse map them, we can probably just do it by the region, each area manager can get their own region, but to fetch all that we need to create a new endpoint or something which will get do this for us.
+
     // Because in the frontend, how do we know what areas are mapped to this region? We need to select the areas who have this region. We need an endpoint for that.
     // As for the database, it is already handling this in the query it self. So it might just work.
     public List<Sales> getTerritorialSales(String username, SalesFilterDTO filters) {
