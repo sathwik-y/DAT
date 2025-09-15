@@ -43,6 +43,7 @@ public class RecruitmentController {
             List<Recruitment> allZonalRecruitments =  recruitmentService.getZonalRecruitments(username,filters);
             return new ResponseEntity<>(allZonalRecruitments,HttpStatus.OK);
         }catch(Exception e){
+            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
@@ -102,11 +103,13 @@ public class RecruitmentController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         try{
-            List<Recruitment> recruitments = recruitmentService.findMyRecruitment(username);
+            List<Recruitment> recruitments = recruitmentService.findMyRecruitments(username);
             return new ResponseEntity<>(recruitments,HttpStatus.OK);
         }catch(Exception e){
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
+
+    
 }

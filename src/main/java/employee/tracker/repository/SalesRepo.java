@@ -1,17 +1,21 @@
 package employee.tracker.repository;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import employee.tracker.enums.*;
-import employee.tracker.model.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import employee.tracker.enums.Area;
+import employee.tracker.enums.Region;
+import employee.tracker.enums.Role;
+import employee.tracker.enums.Status;
+import employee.tracker.enums.Territory;
+import employee.tracker.enums.Zone;
 import employee.tracker.model.Sales;
+import employee.tracker.model.Users;
 
 @Repository
 public interface SalesRepo extends JpaRepository<Sales,Long> {
@@ -23,20 +27,19 @@ public interface SalesRepo extends JpaRepository<Sales,Long> {
     JOIN FETCH s.createdBy u
     WHERE u.zone = :zone
       AND u.role != :role
-      AND (sc.isFollowUp = COALESCE(:isFollowUp, sc.isFollowUp))
-      AND (s.createdAt >= COALESCE(:startDate, s.createdAt))
-      AND (s.createdAt <= COALESCE(:endDate, s.createdAt))
-      AND (u.region    = COALESCE(:region, u.region))
-      AND (u.territory = COALESCE(:territory, u.territory))
-      AND (u.area      = COALESCE(:area, u.area))
-      AND (sc.status   = COALESCE(:status, sc.status))
+      AND (:isFollowUp IS NULL OR sc.isFollowUp = :isFollowUp)
+      AND (CAST(:startDate AS timestamp) IS NULL OR s.createdAt >= :startDate)
+      AND (CAST(:endDate AS timestamp) IS NULL OR s.createdAt <= :endDate)
+      AND (:region IS NULL OR u.region = :region)
+      AND (:territory IS NULL OR u.territory = :territory)
+      AND (:area IS NULL OR u.area = :area)
+      AND (:status IS NULL OR sc.status = :status)
       AND sc.createdAt = (
           SELECT MAX(sc2.createdAt)
           FROM SalesCall sc2
           WHERE sc2.sale = s
       )
 """)
-
     List<Sales> findZonalSales(
             @Param("zone") Zone zone,
             @Param("role") Role role,
@@ -49,25 +52,27 @@ public interface SalesRepo extends JpaRepository<Sales,Long> {
             @Param("isFollowUp") Boolean isFollowUp
     );
 
-
     // Fetch the Regional Head Sales
-    @Query("SELECT DISTINCT s FROM Sales s " +
-            "JOIN FETCH s.salesCalls sc " +
-            "JOIN FETCH s.createdBy u " +
-            "WHERE u.region = COALESCE(:region, u.region) " +
-            "AND u.role != :role " +
-            "AND s.createdAt >= COALESCE(:startDate, s.createdAt) " +
-            "AND s.createdAt <= COALESCE(:endDate, s.createdAt) " +
-            "AND sc.createdAt = (" +
-            "  SELECT MAX(sc2.createdAt) FROM SalesCall sc2 WHERE sc2.sale = s" +
-            ")" +
-            "AND sc.status = COALESCE(:status, sc.status) " +
-            "AND sc.isFollowUp = COALESCE(:isFollowUp, sc.isFollowUp) " +
-            "AND u.area = COALESCE(:area, u.area) " +
-            "AND u.territory = COALESCE(:territory, u.territory)"
-    )
+    @Query("""
+    SELECT DISTINCT s FROM Sales s
+    JOIN FETCH s.salesCalls sc
+    JOIN FETCH s.createdBy u
+    WHERE u.region = :region
+      AND u.role != :role
+      AND (CAST(:startDate AS timestamp) IS NULL OR s.createdAt >= :startDate)
+      AND (CAST(:endDate AS timestamp) IS NULL OR s.createdAt <= :endDate)
+      AND (:area IS NULL OR u.area = :area)
+      AND (:territory IS NULL OR u.territory = :territory)
+      AND (:status IS NULL OR sc.status = :status)
+      AND (:isFollowUp IS NULL OR sc.isFollowUp = :isFollowUp)
+      AND sc.createdAt = (
+          SELECT MAX(sc2.createdAt)
+          FROM SalesCall sc2
+          WHERE sc2.sale = s
+      )
+""")
     List<Sales> findRegionalSales(
-            @Param("region") Region createdByRegion,
+            @Param("region") Region region,
             @Param("role") Role role,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
@@ -77,47 +82,50 @@ public interface SalesRepo extends JpaRepository<Sales,Long> {
             @Param("isFollowUp") Boolean isFollowUp
     );
 
-
-    // NOTE: If there is no one under the TM, this will be just about fetching his own sales details, which will be redundant once we add "My Profile" Section
-    @Query("SELECT DISTINCT s FROM Sales s " +
-            "JOIN FETCH s.salesCalls sc " +
-            "JOIN FETCH s.createdBy u " +
-            "WHERE u.territory = COALESCE(:territory, u.territory) " +
-            "AND sc.createdAt = (" +
-            "  SELECT MAX(sc2.createdAt) FROM SalesCall sc2 WHERE sc2.sale = s" +
-            ")" +
-            "AND s.createdAt >= COALESCE(:startDate, s.createdAt) " +
-            "AND s.createdAt <= COALESCE(:endDate, s.createdAt) " +
-            "AND sc.status = COALESCE(:status, sc.status) " +
-            "AND sc.isFollowUp = COALESCE(:isFollowUp, sc.isFollowUp)"
-    )
+    // Fetch the Territorial Sales
+    @Query("""
+    SELECT DISTINCT s FROM Sales s
+    JOIN FETCH s.salesCalls sc
+    JOIN FETCH s.createdBy u
+    WHERE u.territory = :territory
+      AND (CAST(:startDate AS timestamp) IS NULL OR s.createdAt >= :startDate)
+      AND (CAST(:endDate AS timestamp) IS NULL OR s.createdAt <= :endDate)
+      AND (:status IS NULL OR sc.status = :status)
+      AND (:isFollowUp IS NULL OR sc.isFollowUp = :isFollowUp)
+      AND sc.createdAt = (
+          SELECT MAX(sc2.createdAt)
+          FROM SalesCall sc2
+          WHERE sc2.sale = s
+      )
+""")
     List<Sales> findTerritorialSales(
-            @Param("territory") Territory createdByTerritory,
-//            Role role,
+            @Param("territory") Territory territory,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
             @Param("status") Status status,
             @Param("isFollowUp") Boolean isFollowUp
     );
 
-
-    @Query("SELECT DISTINCT s FROM Sales s " +
-            "JOIN FETCH s.salesCalls sc " +
-            "JOIN FETCH s.createdBy u " +
-            "WHERE u.area = COALESCE(:area, u.area) " +
-            "AND u.role != :role " +
-            "AND s.createdAt >= COALESCE(:startDate, s.createdAt) " +
-            "AND s.createdAt <= COALESCE(:endDate, s.createdAt) " +
-            "AND sc.createdAt = (" +
-            "  SELECT MAX(sc2.createdAt) FROM SalesCall sc2 WHERE sc2.sale = s" +
-            ")" +
-            "AND u.territory = COALESCE(:territory, u.territory) " +
-            "AND sc.status = COALESCE(:status, sc.status) " +
-            "AND sc.isFollowUp = COALESCE(:isFollowUp, sc.isFollowUp)"
-    )
-
+    // Fetch the Area Head Sales
+    @Query("""
+    SELECT DISTINCT s FROM Sales s
+    JOIN FETCH s.salesCalls sc
+    JOIN FETCH s.createdBy u
+    WHERE u.area = :area
+      AND u.role != :role
+      AND (CAST(:startDate AS timestamp) IS NULL OR s.createdAt >= :startDate)
+      AND (CAST(:endDate AS timestamp) IS NULL OR s.createdAt <= :endDate)
+      AND (:territory IS NULL OR u.territory = :territory)
+      AND (:status IS NULL OR sc.status = :status)
+      AND (:isFollowUp IS NULL OR sc.isFollowUp = :isFollowUp)
+      AND sc.createdAt = (
+          SELECT MAX(sc2.createdAt)
+          FROM SalesCall sc2
+          WHERE sc2.sale = s
+      )
+""")
     List<Sales> findAreaSales(
-            @Param("area") Area createdByArea,
+            @Param("area") Area area,
             @Param("role") Role role,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
@@ -126,26 +134,27 @@ public interface SalesRepo extends JpaRepository<Sales,Long> {
             @Param("isFollowUp") Boolean isFollowUp
     );
 
-    // The NH can basically get everything
-    @Query("SELECT DISTINCT s FROM Sales s " +
-            "JOIN FETCH s.salesCalls sc " +
-            "JOIN FETCH s.createdBy u " +
-            "WHERE u.zone = COALESCE(:zone, u.zone) " +
-//     "AND u.role != :role " +   // uncomment if you really need this filter
-            "AND s.createdAt >= COALESCE(:startDate, s.createdAt) " +
-            "AND s.createdAt <= COALESCE(:endDate, s.createdAt) " +
-            "AND u.region = COALESCE(:region, u.region) " +
-            "AND u.territory = COALESCE(:territory, u.territory) " +
-            "AND u.area = COALESCE(:area, u.area) " +
-            "AND sc.createdAt = (" +
-            "  SELECT MAX(sc2.createdAt) FROM SalesCall sc2 WHERE sc2.sale = s" +
-            ")" +
-            "AND sc.status = COALESCE(:status, sc.status) " +
-            "AND sc.isFollowUp = COALESCE(:isFollowUp, sc.isFollowUp)"
-    )
+    // Fetch National Sales (all zones)
+    @Query("""
+    SELECT DISTINCT s FROM Sales s
+    JOIN FETCH s.salesCalls sc
+    JOIN FETCH s.createdBy u
+    WHERE (:zone IS NULL OR u.zone = :zone)
+      AND (CAST(:startDate AS timestamp) IS NULL OR s.createdAt >= :startDate)
+      AND (CAST(:endDate AS timestamp) IS NULL OR s.createdAt <= :endDate)
+      AND (:region IS NULL OR u.region = :region)
+      AND (:territory IS NULL OR u.territory = :territory)
+      AND (:area IS NULL OR u.area = :area)
+      AND (:status IS NULL OR sc.status = :status)
+      AND (:isFollowUp IS NULL OR sc.isFollowUp = :isFollowUp)
+      AND sc.createdAt = (
+          SELECT MAX(sc2.createdAt)
+          FROM SalesCall sc2
+          WHERE sc2.sale = s
+      )
+""")
     List<Sales> findNationalSales(
             @Param("zone") Zone zone,
-//            @Param("role") String role,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
             @Param("region") Region region,
@@ -155,6 +164,5 @@ public interface SalesRepo extends JpaRepository<Sales,Long> {
             @Param("isFollowUp") Boolean isFollowUp
     );
 
-
-    List<Sales> findByCreatedBy(Users user);
+    List<Sales> findByCreatedBy(Users createdBy);
 }

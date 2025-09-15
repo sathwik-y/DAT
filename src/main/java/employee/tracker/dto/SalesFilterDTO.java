@@ -1,49 +1,87 @@
 package employee.tracker.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import employee.tracker.enums.*;
-import lombok.Data;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Data
 public class SalesFilterDTO {
-    // Date filters -> Will be sent from the frontend based on the user selection
-//    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss\n")
     private LocalDateTime startDate;
-//    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss\n")
     private LocalDateTime endDate;
-
-    // Location filters
-    private Zone zone;
-    private Region region;
-    private Territory territory;
-    private Area area;
-
-
-
-    // User filters
-//    private String createdByUsername;
-//    private String roleName; TODO: Need to add this if users get to filter by the role as well.
-
-    private Status status;
+    private String zone;
+    private String region;
+    private String territory;
+    private String area;
+    private String status;
     private Boolean isFollowUp;
 
-    // TODO: Add pagination
+    // Constructors
+    public SalesFilterDTO() {}
 
-    // Default Date range
-    public LocalDateTime getStartDate(){
-        if(this.startDate ==null){
-            return LocalDateTime.now().withDayOfMonth(1);
-        }
-        return this.startDate;
+    public SalesFilterDTO(LocalDateTime startDate, LocalDateTime endDate, String zone, String region, 
+                         String territory, String area, String status, Boolean isFollowUp) {
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.zone = zone;
+        this.region = region;
+        this.territory = territory;
+        this.area = area;
+        this.status = status;
+        this.isFollowUp = isFollowUp;
     }
 
-    public LocalDateTime getEndDate(){
-        if(this.endDate==null){
-            return LocalDateTime.now();
-        }
-        return this.endDate;
+    // Helper methods to check if values are meaningful
+    public boolean hasStartDate() {
+        return startDate != null;
     }
+
+    public boolean hasEndDate() {
+        return endDate != null;
+    }
+
+    public boolean hasZone() {
+        return zone != null && !zone.trim().isEmpty();
+    }
+
+    public boolean hasRegion() {
+        return region != null && !region.trim().isEmpty();
+    }
+
+    public boolean hasTerritory() {
+        return territory != null && !territory.trim().isEmpty();
+    }
+
+    public boolean hasArea() {
+        return area != null && !area.trim().isEmpty();
+    }
+
+    public boolean hasStatus() {
+        return status != null && !status.trim().isEmpty();
+    }
+
+    public boolean hasIsFollowUp() {
+        return isFollowUp != null;
+    }
+
+    // Getters and setters
+    public LocalDateTime getStartDate() { return startDate; }
+    public void setStartDate(LocalDateTime startDate) { this.startDate = startDate; }
+    
+    public LocalDateTime getEndDate() { return endDate; }
+    public void setEndDate(LocalDateTime endDate) { this.endDate = endDate; }
+    
+    public String getZone() { return zone; }
+    public void setZone(String zone) { this.zone = zone; }
+    
+    public String getRegion() { return region; }
+    public void setRegion(String region) { this.region = region; }
+    
+    public String getTerritory() { return territory; }
+    public void setTerritory(String territory) { this.territory = territory; }
+    
+    public String getArea() { return area; }
+    public void setArea(String area) { this.area = area; }
+    
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+    
+    public Boolean getIsFollowUp() { return isFollowUp; }
+    public void setIsFollowUp(Boolean isFollowUp) { this.isFollowUp = isFollowUp; }
 }

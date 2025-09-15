@@ -71,7 +71,9 @@ public class SecurityConfiguration {
                 "http://localhost:5173",
                 "http://localhost:5174",
                 "http://localhost:3000",
-                "http://localhost:3001"
+                "http://localhost:3001",
+                "https://bet-frontend-psi.vercel.app",
+                "https://dat.sathwiky.dev"
         )); // Explicitly allow frontend origin
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type")); // Specific headers
