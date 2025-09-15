@@ -34,12 +34,12 @@ public interface SalesRepo extends JpaRepository<Sales,Long> {
       AND (:territory IS NULL OR u.territory = :territory)
       AND (:area IS NULL OR u.area = :area)
       AND (:status IS NULL OR sc.status = :status)
-      AND sc.createdAt = (
-          SELECT MAX(sc2.createdAt)
-          FROM SalesCall sc2
-          WHERE sc2.sale = s
-      )
 """)
+    //      AND sc.createdAt = (
+//          SELECT MAX(sc2.createdAt)
+//          FROM SalesCall sc2
+//          WHERE sc2.sale = s
+//      )
     List<Sales> findZonalSales(
             @Param("zone") Zone zone,
             @Param("role") Role role,
@@ -65,11 +65,6 @@ public interface SalesRepo extends JpaRepository<Sales,Long> {
       AND (:territory IS NULL OR u.territory = :territory)
       AND (:status IS NULL OR sc.status = :status)
       AND (:isFollowUp IS NULL OR sc.isFollowUp = :isFollowUp)
-      AND sc.createdAt = (
-          SELECT MAX(sc2.createdAt)
-          FROM SalesCall sc2
-          WHERE sc2.sale = s
-      )
 """)
     List<Sales> findRegionalSales(
             @Param("region") Region region,
@@ -92,11 +87,6 @@ public interface SalesRepo extends JpaRepository<Sales,Long> {
       AND (CAST(:endDate AS timestamp) IS NULL OR s.createdAt <= :endDate)
       AND (:status IS NULL OR sc.status = :status)
       AND (:isFollowUp IS NULL OR sc.isFollowUp = :isFollowUp)
-      AND sc.createdAt = (
-          SELECT MAX(sc2.createdAt)
-          FROM SalesCall sc2
-          WHERE sc2.sale = s
-      )
 """)
     List<Sales> findTerritorialSales(
             @Param("territory") Territory territory,
@@ -118,11 +108,6 @@ public interface SalesRepo extends JpaRepository<Sales,Long> {
       AND (:territory IS NULL OR u.territory = :territory)
       AND (:status IS NULL OR sc.status = :status)
       AND (:isFollowUp IS NULL OR sc.isFollowUp = :isFollowUp)
-      AND sc.createdAt = (
-          SELECT MAX(sc2.createdAt)
-          FROM SalesCall sc2
-          WHERE sc2.sale = s
-      )
 """)
     List<Sales> findAreaSales(
             @Param("area") Area area,
@@ -147,11 +132,6 @@ public interface SalesRepo extends JpaRepository<Sales,Long> {
       AND (:area IS NULL OR u.area = :area)
       AND (:status IS NULL OR sc.status = :status)
       AND (:isFollowUp IS NULL OR sc.isFollowUp = :isFollowUp)
-      AND sc.createdAt = (
-          SELECT MAX(sc2.createdAt)
-          FROM SalesCall sc2
-          WHERE sc2.sale = s
-      )
 """)
     List<Sales> findNationalSales(
             @Param("zone") Zone zone,

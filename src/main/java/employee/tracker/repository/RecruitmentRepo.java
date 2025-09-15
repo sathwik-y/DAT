@@ -23,8 +23,7 @@ public interface RecruitmentRepo extends JpaRepository<Recruitment,Long> {
     @Query("SELECT DISTINCT r FROM Recruitment r " +
             "JOIN FETCH r.recruitmentCalls rc " +
             "JOIN FETCH r.createdBy u " +
-            "WHERE rc.createdAt = (SELECT MAX(rc2.createdAt) FROM RecruitmentCall rc2 WHERE rc2.recruitment = r) " +
-            "AND (:zone IS NULL OR u.zone = :zone) " +
+            "WHERE (:zone IS NULL OR u.zone = :zone) " +
             "AND u.role != :role " +
             "AND (CAST(:startDate AS timestamp) IS NULL OR r.createdAt >= :startDate) " +
             "AND (CAST(:endDate AS timestamp) IS NULL OR r.createdAt <= :endDate) " +
@@ -49,8 +48,7 @@ public interface RecruitmentRepo extends JpaRepository<Recruitment,Long> {
     @Query("SELECT DISTINCT r FROM Recruitment r " +
             "JOIN FETCH r.recruitmentCalls rc " +
             "JOIN FETCH r.createdBy u " +
-            "WHERE rc.createdAt = (SELECT MAX(rc2.createdAt) FROM RecruitmentCall rc2 WHERE rc2.recruitment = r) " +
-            "AND u.role != :role " +
+            "WHERE u.role != :role  " +
             "AND u.region = :region " +
             "AND (CAST(:startDate AS timestamp) IS NULL OR r.createdAt >= :startDate) " +
             "AND (CAST(:endDate AS timestamp) IS NULL OR r.createdAt <= :endDate) " +
@@ -73,8 +71,7 @@ public interface RecruitmentRepo extends JpaRepository<Recruitment,Long> {
     @Query("SELECT DISTINCT r FROM Recruitment r " +
             "JOIN FETCH r.recruitmentCalls rc " +
             "JOIN FETCH r.createdBy u " +
-            "WHERE rc.createdAt = (SELECT MAX(rc2.createdAt) FROM RecruitmentCall rc2 WHERE rc2.recruitment = r) " +
-            "AND u.territory = :territory " +
+            "WHERE u.territory = :territory " +
             "AND (CAST(:startDate AS timestamp) IS NULL OR r.createdAt >= :startDate) " +
             "AND (CAST(:endDate AS timestamp) IS NULL OR r.createdAt <= :endDate) " +
             "AND (:status IS NULL OR rc.status = :status) " +
@@ -91,8 +88,7 @@ public interface RecruitmentRepo extends JpaRepository<Recruitment,Long> {
     @Query("SELECT DISTINCT r FROM Recruitment r " +
             "JOIN FETCH r.recruitmentCalls rc " +
             "JOIN FETCH r.createdBy u " +
-            "WHERE rc.createdAt = (SELECT MAX(rc2.createdAt) FROM RecruitmentCall rc2 WHERE rc2.recruitment = r) " +
-            "AND u.role != :role " +
+            "WHERE u.role != :role " +
             "AND u.area = :area " +
             "AND (CAST(:startDate AS timestamp) IS NULL OR r.createdAt >= :startDate) " +
             "AND (CAST(:endDate AS timestamp) IS NULL OR r.createdAt <= :endDate) " +
@@ -113,8 +109,7 @@ public interface RecruitmentRepo extends JpaRepository<Recruitment,Long> {
     @Query("SELECT DISTINCT r FROM Recruitment r " +
             "JOIN FETCH r.recruitmentCalls rc " +
             "JOIN FETCH r.createdBy u " +
-            "WHERE rc.createdAt = (SELECT MAX(rc2.createdAt) FROM RecruitmentCall rc2 WHERE rc2.recruitment = r) " +
-            "AND (:zone IS NULL OR u.zone = :zone) " +
+            "WHERE (:zone IS NULL OR u.zone = :zone) " +
             "AND (CAST(:startDate AS timestamp) IS NULL OR r.createdAt >= :startDate) " +
             "AND (CAST(:endDate AS timestamp) IS NULL OR r.createdAt <= :endDate) " +
             "AND (:region IS NULL OR u.region = :region) " +

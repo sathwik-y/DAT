@@ -74,5 +74,8 @@ public class Users {
     @JsonManagedReference("user-recruitmentCalls")
     private List<RecruitmentCall> recruitmentCalls;
 
+    @Column(nullable = true)
+    private boolean firstLogin = true;  // 👈 new field
+
 
 }
