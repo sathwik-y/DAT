@@ -1,6 +1,7 @@
 package employee.tracker.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import employee.tracker.enums.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -48,5 +49,12 @@ public class SalesCall {
 //    protected void onUpdate(){
 //        this.updatedAt = LocalDateTime.now();
 //    }
+
+    @Transient
+    @JsonProperty("loggedByName")
+    public String getLoggedByName() {
+        return loggedBy != null ? loggedBy.getName() : null;
+    }
+
 }
 

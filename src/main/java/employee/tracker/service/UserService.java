@@ -54,15 +54,16 @@ public class UserService {
         if(manager==null) throw new RuntimeException("User not found: " + username);
         return switch (manager.getRole()) {
             case ZH ->
-                    userRepo.findByZoneAndUserNameNot(manager.getZone(), username);
+                    userRepo.findZonalTeam(manager.getZone(), username);
             case RH ->
-                    userRepo.findByRegionAndUserNameNot(manager.getRegion(), username);
+                    userRepo.findRHTeam(manager.getRegion(), manager.getArea()!=null ? manager.getArea():null, username,
+                            manager.getTerritory()!=null ? manager.getTerritory():null);
             case ARH ->
-                    userRepo.findByRegionAndUserNameNotAndRoleNot(manager.getRegion(),username, Role.RH);
+                    userRepo.findARHTeam(manager.getRegion(),username, manager.getArea()!=null ? manager.getArea():null, Role.RH);
             case AM ->
-                    userRepo.findByAreaAndUserNameNot(manager.getArea(), username);
+                    userRepo.findAMTeam(manager.getArea(), username, Role.TM);
             case NH ->
-                    userRepo.findByUserNameNot(username);
+                    userRepo.findNHTeam(username);
             default -> List.of(); // others don’t have a team, but it will never come to this
         };
 
@@ -73,7 +74,7 @@ public class UserService {
     public void registerBulk(List<Users> users) {
         for (Users user : users) {
             // Encode default password for all
-            user.setPassword(new BCryptPasswordEncoder().encode("Dat@123"));
+            user.setPassword(encoder.encode(user.getPassword()));
             user.setFirstLogin(true);
         }
         usersRepo.saveAll(users); // bulk insert

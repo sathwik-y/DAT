@@ -49,6 +49,7 @@ public class UserController {
             response.put("message", users.size() + " users registered successfully with default password");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            e.printStackTrace();
             Map<String, String> response = new HashMap<>();
             response.put("message", "Bulk registration failed: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
@@ -64,6 +65,7 @@ public class UserController {
             response.put("message","Registration Successful. Please login to continue");
             return ResponseEntity.ok(response);
         }catch (Exception e){
+            e.printStackTrace();
             Map<String,String> response = new HashMap<>();
             response.put("message","Registration Failed. Please try again");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
@@ -162,6 +164,7 @@ public class UserController {
             List<Users> zhTeam = userService.findMyTeam(username);
             return new ResponseEntity<>(zhTeam, HttpStatus.OK);
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }

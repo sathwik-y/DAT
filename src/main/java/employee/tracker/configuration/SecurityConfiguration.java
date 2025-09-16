@@ -38,7 +38,7 @@ public class SecurityConfiguration {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
         http.csrf(customizer -> customizer.disable());
         http.authorizeHttpRequests(request -> request
-                .requestMatchers("/register", "/login","/api/auth/verify","/request-password-reset","/verify-reset-otp","/reset-password","/verify-otp").permitAll()
+                .requestMatchers("/register", "/login","/api/auth/verify","/request-password-reset","/verify-reset-otp","/reset-password","/verify-otp","/register/bulk").permitAll()
                 .requestMatchers("/items/**", "/tag/**", "/notifications/**", "/dashboard").authenticated()
                 .anyRequest().authenticated());
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

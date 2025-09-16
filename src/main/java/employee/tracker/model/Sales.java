@@ -2,6 +2,7 @@ package employee.tracker.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,12 +34,14 @@ public class Sales {
     private BigDecimal annualIncome;
     private LocalDateTime createdAt;
 //    private LocalDateTime updatedAt;
-    @ManyToOne
-    @JoinColumn(name="product_id")
-    @JsonBackReference("product-sales")
-    private Products product; // Need to ask
+//    @ManyToOne
+//    @JoinColumn(name="product_id")
+//    @JsonBackReference("product-sales")
+//    private Products product;
+    // Need to ask
     // Can be kept because one customer can purchase many products. Might have to remove it if each new sales call is a different entry.
 
+    private String product;
     @ManyToOne
     @JoinColumn(name="created_by_id") // set nullable= false later
     @JsonBackReference("user-sales")
@@ -51,7 +54,7 @@ public class Sales {
 
     //TODO: Add Premium Pitched
     // TODO: Referred by
-
+    private Integer premium;
     @PrePersist
     protected void onCreate(){
         this.createdAt = LocalDateTime.now();
@@ -63,5 +66,12 @@ public class Sales {
 //    protected void onUpdate(){
 //        this.updatedAt = LocalDateTime.now();
 //    }
+
+    @Transient
+    @JsonProperty("createdByName")
+    public String getCreatedByName() {
+        return createdBy != null ? createdBy.getName() : null;
+    }
+
 }
 

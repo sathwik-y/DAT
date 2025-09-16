@@ -17,7 +17,7 @@ public class NewSalesDTO {
    private String maritalStatus;
    private String occupation;
    private BigDecimal annualIncome;
-   private Long productId;
+   private String product;
    // Created user will be set by the login,
    // And we add the new salesCall from the object we create
 
@@ -27,4 +27,5 @@ public class NewSalesDTO {
    private String notes;
    private Status status; // ENUM
    // The user will be set by the login here as well
+   private Integer premium;
 }

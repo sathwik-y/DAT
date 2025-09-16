@@ -1,7 +1,9 @@
 package employee.tracker.enums;
 
 public enum Territory {
-    VIZ,
-    VIS,
-    BA,
+//    VIZ,
+//    VIS,
+//    BA,
+    Karnataka3
+
 }

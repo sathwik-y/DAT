@@ -99,8 +99,10 @@ public class SalesService {
                 .dob(newSalesDTO.getDob())
                 .maritalStatus(newSalesDTO.getMaritalStatus())
                 .occupation(newSalesDTO.getOccupation())
-                .product(productRepo.findById(newSalesDTO.getProductId()).orElseThrow(() -> new RuntimeException("Product not found")))
+//                .product(productRepo.findById(newSalesDTO.getProductId()).orElseThrow(() -> new RuntimeException("Product not found")))
+                .product(newSalesDTO.getProduct())
                 .createdBy(user)
+                .premium(newSalesDTO.getPremium())
                 .build();
 
         // Build the SalesCall object from the DTO
