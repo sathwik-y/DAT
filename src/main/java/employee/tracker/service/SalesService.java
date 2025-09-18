@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List; // Import all enums
 
-import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -87,7 +87,7 @@ public class SalesService {
     }
 
     @Transactional
-    @CachePut(value = "newSale",key="#result.id")
+    @CacheEvict(value = {"zoneSale", "regionSale", "territorySale", "areaSale", "allSale", "mySale", "dashboardData"}, allEntries = true)
     public Sales createNewSale(NewSalesDTO newSalesDTO, String username) {
         Users user = usersRepo.findByUserName(username);
         if (user == null) throw new RuntimeException("User not found: " + username);

@@ -4,9 +4,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import employee.tracker.dto.NewRecruitmentDTO;
 import employee.tracker.dto.RecruitmentFilterDTO;
@@ -21,7 +22,6 @@ import employee.tracker.model.Users;
 import employee.tracker.repository.RecruitmentRepo;
 import employee.tracker.repository.UsersRepo;
 import lombok.RequiredArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -86,7 +86,7 @@ public class RecruitmentService {
     }
 
     @Transactional
-    @CachePut(value = "newRec",key="#result.id")
+    @CacheEvict(value = {"zoneRec", "regionRec", "territoryRec", "areaRec", "allRec", "myRec", "dashboardData"}, allEntries = true)
     public Recruitment createNewRecruitment(NewRecruitmentDTO newRecruitmentDTO, String username) {
         Users user = usersRepo.findByUserName(username);
         if (user == null) throw new RuntimeException("User not found: " + username);
@@ -239,7 +239,7 @@ public class RecruitmentService {
     }
 
     // Method to get user's own recruitments
-    @Cacheable(value="regionRec",key = "#username")
+    @Cacheable(value="myRec",key = "#username")
     public List<Recruitment> findMyRecruitments(String username) {
         Users user = usersRepo.findByUserName(username);
         return recruitmentRepo.findByCreatedBy(user);

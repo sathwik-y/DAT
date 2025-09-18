@@ -1,23 +1,25 @@
 package employee.tracker.service;
 
-import employee.tracker.enums.Role;
-import employee.tracker.model.Otp;
-import employee.tracker.model.Users;
-import employee.tracker.repository.OtpRepo;
-import employee.tracker.repository.UsersRepo;
-import employee.tracker.utility.JwtUtil;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
+
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import employee.tracker.enums.Role;
+import employee.tracker.model.Otp;
+import employee.tracker.model.Users;
+import employee.tracker.repository.OtpRepo;
+import employee.tracker.repository.UsersRepo;
+import employee.tracker.utility.JwtUtil;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +31,7 @@ public class UserService {
     public BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
     public final OtpRepo otpRepo;
 
+    @CacheEvict(value = {"allUsers", "myTeam", "dashboardData"}, allEntries = true)
     public Users register(Users user){
         if(userRepo.findByUserName(user.getUserName()) != null) throw new RuntimeException("User already exists");
 //        if(userRepo.findByEmailId(user.getEmailId()) != null) throw new RuntimeException("Email already exists");
@@ -73,6 +76,7 @@ public class UserService {
     }
 
     @Transactional
+    @CacheEvict(value = {"allUsers", "myTeam", "dashboardData"}, allEntries = true)
     public void registerBulk(List<Users> users) {
         for (Users user : users) {
             // Encode default password for all
@@ -103,6 +107,7 @@ public class UserService {
         return true;
     }
 
+    @Cacheable(value="allUsers")
     public List<Users> getAllUsers(){
         return usersRepo.findAll();
     }

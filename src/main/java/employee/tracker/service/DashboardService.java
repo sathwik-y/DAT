@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import employee.tracker.dto.DashboardDTO;
@@ -24,14 +25,17 @@ public class DashboardService {
     private final SalesService salesService;
     private final RecruitmentService recruitmentService;
     private final UserService userService;
-    
+
+    @Cacheable(value="dashboardData",key="#username + '-' + #salesFilters.hashCode() + '-' +  #recruitmentFilters.hashCode()")
     public DashboardDTO getDashboardData(String username, SalesFilterDTO salesFilters, RecruitmentFilterDTO recruitmentFilters) {
         Users currentUser = userService.findByUserName(username);
         
         // Get data based on user role
         List<Sales> salesData = getSalesDataByRole(username, currentUser.getRole(), salesFilters);
         List<Recruitment> recruitmentData = getRecruitmentDataByRole(username, currentUser.getRole(), recruitmentFilters);
-        
+        List<Users> allUsers = userService.getAllUsers();
+
+
         // Calculate overall metrics
         long totalSalesCalls = salesData.stream()
             .mapToLong(sale -> sale.getSalesCalls().size())
@@ -46,9 +50,9 @@ public class DashboardService {
             .reduce(BigDecimal.ZERO, BigDecimal::add);
         
         // Calculate regional breakdown
-        List<DashboardDTO.RegionalMetrics> regionMetrics = calculateRegionalMetrics(salesData, recruitmentData);
-        List<DashboardDTO.AreaMetrics> areaMetrics = calculateAreaMetrics(salesData, recruitmentData);
-        List<DashboardDTO.TerritoryMetrics> territoryMetrics = calculateTerritoryMetrics(salesData, recruitmentData);
+        List<DashboardDTO.RegionalMetrics> regionMetrics = calculateRegionalMetrics(salesData, recruitmentData,allUsers);
+        List<DashboardDTO.AreaMetrics> areaMetrics = calculateAreaMetrics(salesData, recruitmentData,allUsers);
+        List<DashboardDTO.TerritoryMetrics> territoryMetrics = calculateTerritoryMetrics(salesData, recruitmentData,allUsers);
         
         return DashboardDTO.builder()
             .totalSalesCalls(totalSalesCalls)
@@ -82,11 +86,12 @@ public class DashboardService {
         };
     }
     
-    private List<DashboardDTO.RegionalMetrics> calculateRegionalMetrics(List<Sales> salesData, List<Recruitment> recruitmentData) {
+    private List<DashboardDTO.RegionalMetrics> calculateRegionalMetrics(List<Sales> salesData, List<Recruitment> recruitmentData,List<Users> allUsers) {
+
         Map<String, DashboardDTO.RegionalMetrics> regionMap = new HashMap<>();
         
         // First, get all possible regions from Users table to ensure we show 0 counts
-        List<Users> allUsers = userService.getAllUsers();
+//        List<Users> allUsers = userService.getAllUsers();
         for (Users user : allUsers) {
             if (user.getRegion() != null) {
                 String regionName = user.getRegion().name();
@@ -135,11 +140,11 @@ public class DashboardService {
         return new ArrayList<>(regionMap.values());
     }
     
-    private List<DashboardDTO.AreaMetrics> calculateAreaMetrics(List<Sales> salesData, List<Recruitment> recruitmentData) {
+    private List<DashboardDTO.AreaMetrics> calculateAreaMetrics(List<Sales> salesData, List<Recruitment> recruitmentData,List<Users> allUsers) {
         Map<String, DashboardDTO.AreaMetrics> areaMap = new HashMap<>();
         
         // First, get all possible areas from Users table to ensure we show 0 counts
-        List<Users> allUsers = userService.getAllUsers();
+//        List<Users> allUsers = userService.getAllUsers();
         for (Users user : allUsers) {
             if (user.getArea() != null) {
                 String areaName = user.getArea().name();
@@ -188,11 +193,11 @@ public class DashboardService {
         return new ArrayList<>(areaMap.values());
     }
     
-    private List<DashboardDTO.TerritoryMetrics> calculateTerritoryMetrics(List<Sales> salesData, List<Recruitment> recruitmentData) {
+    private List<DashboardDTO.TerritoryMetrics> calculateTerritoryMetrics(List<Sales> salesData, List<Recruitment> recruitmentData,List<Users> allUsers) {
         Map<String, DashboardDTO.TerritoryMetrics> territoryMap = new HashMap<>();
         
         // First, get all possible territories from Users table to ensure we show 0 counts
-        List<Users> allUsers = userService.getAllUsers();
+//        List<Users> allUsers = userService.getAllUsers();
         for (Users user : allUsers) {
             if (user.getTerritory() != null) {
                 String territoryName = user.getTerritory().name();

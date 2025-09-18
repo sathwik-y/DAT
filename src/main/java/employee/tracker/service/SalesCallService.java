@@ -3,7 +3,7 @@ package employee.tracker.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,7 +85,7 @@ public class SalesCallService {
     }
 
     @Transactional
-    @CachePut(value = "newSale",key="#result.id")
+    @CacheEvict(value = {"zoneSaleCall", "regionSaleCall", "territorySaleCall", "areaSaleCall", "allSaleCall", "mySaleCall", "dashboardData"}, allEntries = true)
     public SalesCall createSalesCall(SalesCall salesCall, Long saleId, String username) {
         Users user = usersRepo.findByUserName(username);
         if (user == null) throw new RuntimeException("User not found: " + username);
