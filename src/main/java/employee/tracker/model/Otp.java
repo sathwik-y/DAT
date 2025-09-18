@@ -16,14 +16,14 @@ import java.time.LocalDateTime;
 public class Otp {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    public Long id;
 
-    private String userName;
-    private String otp;
-    private LocalDateTime expiry;
+    public String userName;
+    public String otp;
+    public LocalDateTime expiry;
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private Users user;
+    public Users user;
 
     public boolean isExpired() {
         return LocalDateTime.now().isAfter(expiry);

@@ -15,8 +15,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Transactional
 public class OtpService {
-    private final OtpRepo otpRepository;
-    private final JavaMailSender mailSender;
+    public final OtpRepo otpRepository;
+    public final JavaMailSender mailSender;
 
     public void generateOtp(String userName, String email) {
         // Create 6-digit random OTP
@@ -37,7 +37,7 @@ public class OtpService {
 //        return otp;
     }
 
-    private void sendEmail(String to, String otp) {
+    public void sendEmail(String to, String otp) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject("Your OTP Code");

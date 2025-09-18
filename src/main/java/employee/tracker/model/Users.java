@@ -32,50 +32,50 @@ public class Users {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // This one is only with respect to the database, not the employee id
-    private String name;
-    private String phoneNo;
+    public Long id; // This one is only with respect to the database, not the employee id
+    public String name;
+    public String phoneNo;
     @Column(unique = true,nullable = false)
-    private String userName; // This will be the empId of the login
+    public String userName; // This will be the empId of the login
     @Column(nullable = false)
-    private String password;
-    private String emailId;
+    public String password;
+    public String emailId;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
+    public Role role;
 
     @Enumerated(EnumType.STRING)
-    private Region region;
+    public Region region;
 
     @Enumerated(EnumType.STRING)
-    private Territory territory;
+    public Territory territory;
 
     @Enumerated(EnumType.STRING)
-    private Zone zone;
+    public Zone zone;
 
     @Enumerated(EnumType.STRING)
-    private Area area;
+    public Area area;
     
-    private String gender;
+    public String gender;
 
     @OneToMany(fetch=FetchType.LAZY,mappedBy = "createdBy",orphanRemoval = false)
     @JsonManagedReference("user-sales")
-    private List<Sales> sales; // Because one user can make many sales
+    public List<Sales> sales; // Because one user can make many sales
 
     @OneToMany(fetch=FetchType.LAZY, mappedBy = "createdBy", orphanRemoval = false)
     @JsonManagedReference("user-recruitments")
-    private List<Recruitment> recruitments; // Same here
+    public List<Recruitment> recruitments; // Same here
 
     @OneToMany(fetch=FetchType.LAZY,mappedBy = "loggedBy",orphanRemoval = false)
     @JsonManagedReference("user-salesCall")
-    private List<SalesCall> salesCalls;
+    public List<SalesCall> salesCalls;
 
     @OneToMany(fetch=FetchType.LAZY,mappedBy = "loggedBy",orphanRemoval = false)
     @JsonManagedReference("user-recruitmentCalls")
-    private List<RecruitmentCall> recruitmentCalls;
+    public List<RecruitmentCall> recruitmentCalls;
 
     @Column(nullable = true)
-    private boolean firstLogin = true;  // 👈 new field
+    public boolean firstLogin = true;  // 👈 new field
 
 
 }

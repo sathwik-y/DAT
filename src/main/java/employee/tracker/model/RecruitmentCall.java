@@ -28,28 +28,28 @@ import lombok.NoArgsConstructor;
 public class RecruitmentCall {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    public Long id;
 
-    private LocalDateTime createdAt;
+    public LocalDateTime createdAt;
 
-    private LocalDateTime updatedAt;
+    public LocalDateTime updatedAt;
 
-    private boolean isFollowUp;
-    private LocalDateTime followUpDate; // This should only show up if the above value is true
+    public boolean isFollowUp;
+    public LocalDateTime followUpDate; // This should only show up if the above value is true
 
     @ManyToOne
     @JoinColumn(name = "recruitment_id")
     @JsonBackReference("recruitment-recruitmentCalls")
-    private Recruitment recruitment;
+    public Recruitment recruitment;
 
 
     @Enumerated(EnumType.STRING)
-    private Status status; // ENUM
-    private String notes;
+    public Status status; // ENUM
+    public String notes;
 
     @ManyToOne
     @JsonBackReference("user-recruitmentCalls")
-    private Users loggedBy;
+    public Users loggedBy;
 
     @PrePersist
     protected void onCreate(){

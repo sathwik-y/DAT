@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import employee.tracker.dto.NewRecruitmentDTO;
@@ -19,16 +21,17 @@ import employee.tracker.model.Users;
 import employee.tracker.repository.RecruitmentRepo;
 import employee.tracker.repository.UsersRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class RecruitmentService {
 
-    private final RecruitmentRepo recruitmentRepo;
-    private final UsersRepo usersRepo;
+    public final RecruitmentRepo recruitmentRepo;
+    public final UsersRepo usersRepo;
 
     // Helper method to convert String to Zone enum
-    private Zone getZoneEnum(String zoneString) {
+    public Zone getZoneEnum(String zoneString) {
         if (zoneString == null || zoneString.trim().isEmpty()) return null;
         try {
             return Zone.valueOf(zoneString.trim().toUpperCase());
@@ -39,7 +42,7 @@ public class RecruitmentService {
     }
 
     // Helper method to convert String to Region enum
-    private Region getRegionEnum(String regionString) {
+    public Region getRegionEnum(String regionString) {
         if (regionString == null || regionString.trim().isEmpty()) return null;
         try {
             return Region.valueOf(regionString.trim().toUpperCase());
@@ -50,7 +53,7 @@ public class RecruitmentService {
     }
 
     // Helper method to convert String to Territory enum
-    private Territory getTerritoryEnum(String territoryString) {
+    public Territory getTerritoryEnum(String territoryString) {
         if (territoryString == null || territoryString.trim().isEmpty()) return null;
         try {
             return Territory.valueOf(territoryString.trim().toUpperCase());
@@ -61,7 +64,7 @@ public class RecruitmentService {
     }
 
     // Helper method to convert String to Area enum
-    private Area getAreaEnum(String areaString) {
+    public Area getAreaEnum(String areaString) {
         if (areaString == null || areaString.trim().isEmpty()) return null;
         try {
             return Area.valueOf(areaString.trim().toUpperCase());
@@ -72,7 +75,7 @@ public class RecruitmentService {
     }
 
     // Helper method to convert String to Status enum
-    private Status getStatusEnum(String statusString) {
+    public Status getStatusEnum(String statusString) {
         if (statusString == null || statusString.trim().isEmpty()) return null;
         try {
             return Status.valueOf(statusString.trim().toUpperCase());
@@ -82,6 +85,8 @@ public class RecruitmentService {
         }
     }
 
+    @Transactional
+    @CachePut(value = "newRec",key="#result.id")
     public Recruitment createNewRecruitment(NewRecruitmentDTO newRecruitmentDTO, String username) {
         Users user = usersRepo.findByUserName(username);
         if (user == null) throw new RuntimeException("User not found: " + username);
@@ -127,6 +132,7 @@ public class RecruitmentService {
         }
 
     // Method to get zonal recruitments with filters
+    @Cacheable(value="zoneRec",key = "#username + '-' + #filters.hashCode()")
     public List<Recruitment> getZonalRecruitments(String username, RecruitmentFilterDTO filters) {
         Users user = usersRepo.findByUserName(username);
         
@@ -151,6 +157,7 @@ public class RecruitmentService {
     }
 
     // Method to get regional recruitments with filters
+    @Cacheable(value="regionRec",key = "#username + '-' + #filters.hashCode()")
     public List<Recruitment> getRegionalRecruitments(String username, RecruitmentFilterDTO filters) {
         Users user = usersRepo.findByUserName(username);
         
@@ -172,6 +179,7 @@ public class RecruitmentService {
     }
 
     // Method to get territorial recruitments with filters
+    @Cacheable(value="territoryRec",key = "#username + '-' + #filters.hashCode()")
     public List<Recruitment> getTerritorialRecruitments(String username, RecruitmentFilterDTO filters) {
         Users user = usersRepo.findByUserName(username);
         
@@ -190,6 +198,7 @@ public class RecruitmentService {
     }
 
     // Method to get area recruitments with filters
+    @Cacheable(value="areaRec",key = "#username + '-' + #filters.hashCode()")
     public List<Recruitment> getAreaRecruitments(String username, RecruitmentFilterDTO filters) {
         Users user = usersRepo.findByUserName(username);
         
@@ -210,6 +219,7 @@ public class RecruitmentService {
     }
 
     // Method to get all national recruitments with filters
+    @Cacheable(value="allRec",key = "#filters.hashCode()")
     public List<Recruitment> getAllRecruitments(RecruitmentFilterDTO filters) {
         LocalDateTime startDate = filters.hasStartDate() ? filters.getStartDate() : null;
         LocalDateTime endDate = filters.hasEndDate() ? filters.getEndDate() : null;
@@ -229,6 +239,7 @@ public class RecruitmentService {
     }
 
     // Method to get user's own recruitments
+    @Cacheable(value="regionRec",key = "#username")
     public List<Recruitment> findMyRecruitments(String username) {
         Users user = usersRepo.findByUserName(username);
         return recruitmentRepo.findByCreatedBy(user);

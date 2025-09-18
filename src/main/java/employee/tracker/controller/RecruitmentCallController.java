@@ -19,7 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RecruitmentCallController {
 
-    private final RecruitmentCallService recruitmentCallService;
+    public final RecruitmentCallService recruitmentCallService;
 
     @PostMapping("/add")
     public ResponseEntity<RecruitmentCall> addNewRecruitmentCall(@RequestBody RecruitmentCall recruitmentCall, @RequestParam Long recruitmentId){

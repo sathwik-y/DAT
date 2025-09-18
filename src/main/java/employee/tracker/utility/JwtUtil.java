@@ -14,9 +14,9 @@ import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JwtUtil {
-    private final String SECRET_KEY = "TaK+HaV^uvCHEFsEVfypW#7g9^k*Z8$V";
+    public final String SECRET_KEY = "TaK+HaV^uvCHEFsEVfypW#7g9^k*Z8$V";
 
-    private SecretKey getSigningKey() {
+    public SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
@@ -29,7 +29,7 @@ public class JwtUtil {
         return extractAllClaims(token).getExpiration();
     }
 
-    private Claims extractAllClaims(String token) {
+    public Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()
@@ -37,7 +37,7 @@ public class JwtUtil {
                 .getPayload();
     }
 
-    private Boolean isTokenExpired(String token) {
+    public Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
@@ -46,7 +46,7 @@ public class JwtUtil {
         return createToken(claims, username);
     }
 
-    private String createToken(Map<String, Object> claims, String subject) {
+    public String createToken(Map<String, Object> claims, String subject) {
         String token = Jwts.builder()
                 .claims(claims)
                 .subject(subject)

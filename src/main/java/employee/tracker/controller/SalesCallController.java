@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/sales/calls")
 @RequiredArgsConstructor
 public class SalesCallController {
-    private final SalesCallService salesCallService;
+    public final SalesCallService salesCallService;
 
     // New Sales call creation has already been handles with SalesController and is already present in SalesCallService
     @PostMapping("/add")

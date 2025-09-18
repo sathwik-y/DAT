@@ -23,36 +23,36 @@ public class Recruitment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    public Long id;
 
-    private String name;
-    private String phoneNo;
-    private String gender;
-    private int age;
-    private LocalDateTime dob;
-    private String maritalStatus;
-    private String occupation;
-    private String profession;
-    private BigDecimal annualIncome;
+    public String name;
+    public String phoneNo;
+    public String gender;
+    public int age;
+    public LocalDateTime dob;
+    public String maritalStatus;
+    public String occupation;
+    public String profession;
+    public BigDecimal annualIncome;
 
-    private boolean isCompetition;
-    private String competingCompany; // Only if the above one is yes
+    public boolean isCompetition;
+    public String competingCompany; // Only if the above one is yes
 
-    private IMOptedPosition optedPosition; // ENUM
-    private LocalDateTime createdAt;
-    private String referredBy; // Self/Other IMs
+    public IMOptedPosition optedPosition; // ENUM
+    public LocalDateTime createdAt;
+    public String referredBy; // Self/Other IMs
 
     @Enumerated(EnumType.STRING)
-    private LeadSources leadSources; // ENUM
+    public LeadSources leadSources; // ENUM
 
     @ManyToOne
     @JoinColumn(name="created_by_id")
     @JsonBackReference("user-recruitments")
-    private Users createdBy;
+    public Users createdBy;
 
     @OneToMany(mappedBy = "recruitment",cascade = CascadeType.PERSIST)
     @JsonManagedReference("recruitment-recruitmentCalls")
-    private List<RecruitmentCall> recruitmentCalls;
+    public List<RecruitmentCall> recruitmentCalls;
 
 
     @PrePersist

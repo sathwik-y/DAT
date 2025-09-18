@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/recruitment")
 public class RecruitmentController {
-    private final RecruitmentService recruitmentService;
+    public final RecruitmentService recruitmentService;
     @PostMapping("/new-call")
     public ResponseEntity<Recruitment> createNewRecruitment(@RequestBody NewRecruitmentDTO newRecruitmentDTO){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

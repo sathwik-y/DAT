@@ -1,17 +1,27 @@
 package employee.tracker.model;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.*;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Data
@@ -22,39 +32,39 @@ public class Sales {
     // This contains information about the clients who are reached out for sales call, Meaning for the product they are buying.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    public Long id;
 
-    private String name;
-    private String phoneNo;
-    private String gender;
-    private int age;
-    private LocalDateTime dob;
-    private String maritalStatus;
-    private String occupation;
-    private BigDecimal annualIncome;
-    private LocalDateTime createdAt;
-//    private LocalDateTime updatedAt;
+    public String name;
+    public String phoneNo;
+    public String gender;
+    public int age;
+    public LocalDateTime dob;
+    public String maritalStatus;
+    public String occupation;
+    public BigDecimal annualIncome;
+    public LocalDateTime createdAt;
+//    public LocalDateTime updatedAt;
 //    @ManyToOne
 //    @JoinColumn(name="product_id")
 //    @JsonBackReference("product-sales")
-//    private Products product;
+//    public Products product;
     // Need to ask
     // Can be kept because one customer can purchase many products. Might have to remove it if each new sales call is a different entry.
 
-    private String product;
+    public String product;
     @ManyToOne
     @JoinColumn(name="created_by_id") // set nullable= false later
     @JsonBackReference("user-sales")
-    private Users createdBy;
+    public Users createdBy;
 
 
     @OneToMany(mappedBy = "sale", cascade = CascadeType.PERSIST)
     @JsonManagedReference("sale-salesCall")
-    private List<SalesCall> salesCalls;
+    public List<SalesCall> salesCalls;
 
     //TODO: Add Premium Pitched
     // TODO: Referred by
-    private Integer premium;
+    public BigDecimal premium;
     @PrePersist
     protected void onCreate(){
         this.createdAt = LocalDateTime.now();

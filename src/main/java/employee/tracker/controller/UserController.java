@@ -32,13 +32,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserService service;
-    private final AuthenticationManager authenticationManager;
-    private final JwtUtil jwtUtil;
-    private final UserService userService;
-    private final OtpService otpService;
-    private final UsersRepo usersRepo;
-    private final EmailService emailService;
+    public final UserService service;
+    public final AuthenticationManager authenticationManager;
+    public final JwtUtil jwtUtil;
+    public final UserService userService;
+    public final OtpService otpService;
+    public final UsersRepo usersRepo;
+    public final EmailService emailService;
 
 
     @PostMapping("/register/bulk")

@@ -22,8 +22,8 @@ import org.springframework.lang.NonNull;
 @Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
-    private final UserDetailsService userDetailsService;
-    private final JwtUtil jwtUtil;
+    public final UserDetailsService userDetailsService;
+    public final JwtUtil jwtUtil;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain chain)

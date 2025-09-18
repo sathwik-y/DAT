@@ -3,14 +3,14 @@ package employee.tracker.dto;
 import java.time.LocalDateTime;
 
 public class RecruitmentFilterDTO {
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
-    private String zone;
-    private String region;
-    private String territory;
-    private String area;
-    private String status;
-    private Boolean isFollowUp;
+    public LocalDateTime startDate;
+    public LocalDateTime endDate;
+    public String zone;
+    public String region;
+    public String territory;
+    public String area;
+    public String status;
+    public Boolean isFollowUp;
 
     // Constructors
     public RecruitmentFilterDTO() {}

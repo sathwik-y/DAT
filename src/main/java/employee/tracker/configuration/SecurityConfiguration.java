@@ -30,8 +30,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfiguration {
 
-    private final UserDetailsService userDetailsService;
-    private final JwtFilter jwtFilter;
+    public final UserDetailsService userDetailsService;
+    public final JwtFilter jwtFilter;
 // TODO: Update the JWT TO cookie instead of local storage
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

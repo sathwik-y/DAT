@@ -12,41 +12,41 @@ import java.time.LocalDateTime;
 public class NewRecruitmentDTO {
 
     // Recruitment
-    private String name;
-    private String phoneNo;
-    private String gender;
-    private int age;
-    private LocalDateTime dob;
-    private String maritalStatus;
-    private String occupation;
-    private String profession;
-    private BigDecimal annualIncome;
-    private boolean isCompetition;
-    private String competingCompany; // Only if the above one is yes
-    private IMOptedPosition optedPosition; // ENUM
-    private String referredBy; // Self/Other IMs
-    private LeadSources leadSources; // ENUM
+    public String name;
+    public String phoneNo;
+    public String gender;
+    public int age;
+    public LocalDateTime dob;
+    public String maritalStatus;
+    public String occupation;
+    public String profession;
+    public BigDecimal annualIncome;
+    public boolean isCompetition;
+    public String competingCompany; // Only if the above one is yes
+    public IMOptedPosition optedPosition; // ENUM
+    public String referredBy; // Self/Other IMs
+    public LeadSources leadSources; // ENUM
 
 
     // Recruitment Call
-    private LocalDateTime followUpDate;
-    private Status status; // ENUM
-    private String notes;
+    public LocalDateTime followUpDate;
+    public Status status; // ENUM
+    public String notes;
 }
 
 
 /*
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    public Long id;
 
-    private String name;
-    private String phoneNo;
-    private String gender;
-    private int age;
-    private LocalDateTime dob;
-    private String maritalStatus;
-    private String occupation;
-    private String profession;
-    private BigDecimal annualIncome;
+    public String name;
+    public String phoneNo;
+    public String gender;
+    public int age;
+    public LocalDateTime dob;
+    public String maritalStatus;
+    public String occupation;
+    public String profession;
+    public BigDecimal annualIncome;
  */

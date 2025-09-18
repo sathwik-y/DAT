@@ -6,6 +6,7 @@ import employee.tracker.model.Users;
 import employee.tracker.repository.OtpRepo;
 import employee.tracker.repository.UsersRepo;
 import employee.tracker.utility.JwtUtil;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,12 +22,12 @@ import java.util.concurrent.ThreadLocalRandom;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private final UsersRepo userRepo;
-    private final JwtUtil jwtUtil;
+    public final UsersRepo userRepo;
+    public final JwtUtil jwtUtil;
     final AuthenticationManager authenticationManager;
-    private final UsersRepo usersRepo;
-    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
-    private final OtpRepo otpRepo;
+    public final UsersRepo usersRepo;
+    public BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+    public final OtpRepo otpRepo;
 
     public Users register(Users user){
         if(userRepo.findByUserName(user.getUserName()) != null) throw new RuntimeException("User already exists");
@@ -47,6 +48,7 @@ public class UserService {
     }
 
 
+    @Cacheable(value="myTeam",key="#username")
     public List<Users> findMyTeam(String username) {
 
 
@@ -101,4 +103,7 @@ public class UserService {
         return true;
     }
 
+    public List<Users> getAllUsers(){
+        return usersRepo.findAll();
+    }
 }

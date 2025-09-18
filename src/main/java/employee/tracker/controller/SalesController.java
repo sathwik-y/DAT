@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/sales")
 @RequiredArgsConstructor
 public class SalesController{
-    private final SalesService salesService;
+    public final SalesService salesService;
 
     @PostMapping("/new-call")
     public ResponseEntity<Sales> createNewSale(@RequestBody NewSalesDTO newSalesDTO){

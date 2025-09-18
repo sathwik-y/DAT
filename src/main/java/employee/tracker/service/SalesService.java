@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List; // Import all enums
 
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,12 +27,12 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class SalesService {
-    private final SalesRepo salesRepo;
-    private final UsersRepo usersRepo;
-    private final ProductRepo productRepo;
+    public final SalesRepo salesRepo;
+    public final UsersRepo usersRepo;
+    public final ProductRepo productRepo;
 
     // Helper method to convert String to Zone enum
-    private Zone getZoneEnum(String zoneString) {
+    public Zone getZoneEnum(String zoneString) {
         if (zoneString == null || zoneString.trim().isEmpty()) return null;
         try {
             return Zone.valueOf(zoneString.trim().toUpperCase());
@@ -41,7 +43,7 @@ public class SalesService {
     }
 
     // Helper method to convert String to Region enum
-    private Region getRegionEnum(String regionString) {
+    public Region getRegionEnum(String regionString) {
         if (regionString == null || regionString.trim().isEmpty()) return null;
         try {
             return Region.valueOf(regionString.trim().toUpperCase());
@@ -52,7 +54,7 @@ public class SalesService {
     }
 
     // Helper method to convert String to Territory enum
-    private Territory getTerritoryEnum(String territoryString) {
+    public Territory getTerritoryEnum(String territoryString) {
         if (territoryString == null || territoryString.trim().isEmpty()) return null;
         try {
             return Territory.valueOf(territoryString.trim().toUpperCase());
@@ -63,7 +65,7 @@ public class SalesService {
     }
 
     // Helper method to convert String to Area enum
-    private Area getAreaEnum(String areaString) {
+    public Area getAreaEnum(String areaString) {
         if (areaString == null || areaString.trim().isEmpty()) return null;
         try {
             return Area.valueOf(areaString.trim().toUpperCase());
@@ -74,7 +76,7 @@ public class SalesService {
     }
 
     // Helper method to convert String to Status enum
-    private Status getStatusEnum(String statusString) {
+    public Status getStatusEnum(String statusString) {
         if (statusString == null || statusString.trim().isEmpty()) return null;
         try {
             return Status.valueOf(statusString.trim().toUpperCase());
@@ -85,6 +87,7 @@ public class SalesService {
     }
 
     @Transactional
+    @CachePut(value = "newSale",key="#result.id")
     public Sales createNewSale(NewSalesDTO newSalesDTO, String username) {
         Users user = usersRepo.findByUserName(username);
         if (user == null) throw new RuntimeException("User not found: " + username);
@@ -131,6 +134,7 @@ public class SalesService {
     }
 
     // Method to get zonal sales with filters
+    @Cacheable(value="zoneSale",key = "#username + '-' + #filters.hashCode()")
     public List<Sales> getZonalSales(String username, SalesFilterDTO filters) {
         Users user = usersRepo.findByUserName(username);
         
@@ -155,6 +159,7 @@ public class SalesService {
     }
 
     // Method to get regional sales with filters
+    @Cacheable(value="regionSale",key = "#username + '-' + #filters.hashCode()")
     public List<Sales> getRegionalSales(String username, SalesFilterDTO filters) {
         Users user = usersRepo.findByUserName(username);
         
@@ -176,6 +181,7 @@ public class SalesService {
     }
 
     // Method to get territorial sales with filters
+    @Cacheable(value="territorySale",key = "#username + '-' + #filters.hashCode()")
     public List<Sales> getTerritorialSales(String username, SalesFilterDTO filters) {
         Users user = usersRepo.findByUserName(username);
         
@@ -194,6 +200,7 @@ public class SalesService {
     }
 
     // Method to get area sales with filters
+    @Cacheable(value="areaSale",key = "#username + '-' + #filters.hashCode()")
     public List<Sales> getAreaSales(String username, SalesFilterDTO filters) {
         Users user = usersRepo.findByUserName(username);
         
@@ -214,6 +221,7 @@ public class SalesService {
     }
 
     // Method to get all national sales with filters
+    @Cacheable(value="allSale",key = "#filters.hashCode()")
     public List<Sales> getAllSales(SalesFilterDTO filters) {
         LocalDateTime startDate = filters.hasStartDate() ? filters.getStartDate() : null;
         LocalDateTime endDate = filters.hasEndDate() ? filters.getEndDate() : null;
@@ -233,6 +241,7 @@ public class SalesService {
     }
 
     // Method to get user's own sales
+    @Cacheable(value="mySale",key="#username")
     public List<Sales> findMySales(String username) {
         Users user = usersRepo.findByUserName(username);
         return salesRepo.findByCreatedBy(user);

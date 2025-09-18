@@ -20,18 +20,18 @@ import java.util.List;
 public class Products {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    public Long id;
 
-    private String name;
-    private String type;
-    private BigDecimal value;
-    private LocalDateTime launchedAt;
-    private LocalDateTime stoppedAt;
+    public String name;
+    public String type;
+    public BigDecimal value;
+    public LocalDateTime launchedAt;
+    public LocalDateTime stoppedAt;
 
-    private String note;
+    public String note;
     // TODO: Can map each product to the customers who purchased this product
 
     @OneToMany(mappedBy = "product")
     @JsonManagedReference("product-sales")
-    private List<Sales> sale;
+    public List<Sales> sale;
 }

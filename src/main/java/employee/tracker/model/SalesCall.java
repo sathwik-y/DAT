@@ -19,25 +19,25 @@ import java.time.LocalDateTime;
 public class SalesCall {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    public Long id;
 
-    private LocalDateTime createdAt;
-    private boolean isFollowUp;
-    private LocalDateTime followUpDate;
+    public LocalDateTime createdAt;
+    public boolean isFollowUp;
+    public LocalDateTime followUpDate;
 
     @ManyToOne
     @JoinColumn(name="sale_id")
     @JsonBackReference("sale-salesCall")
-    private Sales sale;
-    private String notes;
+    public Sales sale;
+    public String notes;
     @Enumerated(EnumType.STRING)
-    private Status status; //ENUM
+    public Status status; //ENUM
 
 
     @ManyToOne
     @JoinColumn(name="user_id")
     @JsonBackReference("user-salesCall")
-    private Users loggedBy;
+    public Users loggedBy;
 
     @PrePersist
     protected void onCreate(){
