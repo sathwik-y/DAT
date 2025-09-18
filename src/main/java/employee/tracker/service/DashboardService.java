@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import employee.tracker.model.*;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -13,9 +14,6 @@ import employee.tracker.dto.DashboardDTO;
 import employee.tracker.dto.RecruitmentFilterDTO;
 import employee.tracker.dto.SalesFilterDTO;
 import employee.tracker.enums.Role;
-import employee.tracker.model.Recruitment;
-import employee.tracker.model.Sales;
-import employee.tracker.model.Users;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -53,15 +51,65 @@ public class DashboardService {
         List<DashboardDTO.RegionalMetrics> regionMetrics = calculateRegionalMetrics(salesData, recruitmentData,allUsers);
         List<DashboardDTO.AreaMetrics> areaMetrics = calculateAreaMetrics(salesData, recruitmentData,allUsers);
         List<DashboardDTO.TerritoryMetrics> territoryMetrics = calculateTerritoryMetrics(salesData, recruitmentData,allUsers);
-        
+
+        // Calculate status metrics
+        DashboardDTO.StatusMetrics statusMetrics = calculateStatusMetrics(salesData, recruitmentData);
+
         return DashboardDTO.builder()
-            .totalSalesCalls(totalSalesCalls)
-            .totalRecruitmentCalls(totalRecruitmentCalls)
-            .totalPremiumCollected(totalPremium)
-            .regionMetrics(regionMetrics)
-            .areaMetrics(areaMetrics)
-            .territoryMetrics(territoryMetrics)
-            .build();
+                .totalSalesCalls(totalSalesCalls)
+                .totalRecruitmentCalls(totalRecruitmentCalls)
+                .totalPremiumCollected(totalPremium)
+                .regionMetrics(regionMetrics)
+                .areaMetrics(areaMetrics)
+                .territoryMetrics(territoryMetrics)
+                .statusMetrics(statusMetrics)
+                .build();
+    }
+
+    // Add new method to calculate status metrics
+    private DashboardDTO.StatusMetrics calculateStatusMetrics(List<Sales> salesData, List<Recruitment> recruitmentData) {
+        // Count sales calls by status
+        long salesFollowUp = 0, salesDropped = 0, salesClosed = 0;
+        long recruitmentFollowUp = 0, recruitmentDropped = 0, recruitmentClosed = 0;
+
+        // Process sales calls
+        for (Sales sale : salesData) {
+            if (sale.getSalesCalls() != null) {
+                for (SalesCall call : sale.getSalesCalls()) {
+                    if (call.getStatus() != null) {
+                        switch (call.getStatus()) {
+                            case FOLLOWUP -> salesFollowUp++;
+                            case DROPPED -> salesDropped++;
+                            case CLOSED -> salesClosed++;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Process recruitment calls
+        for (Recruitment recruitment : recruitmentData) {
+            if (recruitment.getRecruitmentCalls() != null) {
+                for (RecruitmentCall call : recruitment.getRecruitmentCalls()) {
+                    if (call.getStatus() != null) {
+                        switch (call.getStatus()) {
+                            case FOLLOWUP -> recruitmentFollowUp++;
+                            case DROPPED -> recruitmentDropped++;
+                            case CLOSED -> recruitmentClosed++;
+                        }
+                    }
+                }
+            }
+        }
+
+        return DashboardDTO.StatusMetrics.builder()
+                .salesFollowUp(salesFollowUp)
+                .salesDropped(salesDropped)
+                .salesClosed(salesClosed)
+                .recruitmentFollowUp(recruitmentFollowUp)
+                .recruitmentDropped(recruitmentDropped)
+                .recruitmentClosed(recruitmentClosed)
+                .build();
     }
     
     private List<Sales> getSalesDataByRole(String username, Role role, SalesFilterDTO filters) {

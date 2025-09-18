@@ -23,7 +23,24 @@ public class DashboardDTO {
     private List<RegionalMetrics> regionMetrics;
     private List<AreaMetrics> areaMetrics;
     private List<TerritoryMetrics> territoryMetrics;
-    
+    private StatusMetrics statusMetrics;
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class StatusMetrics {
+        // Sales calls by status
+        private Long salesFollowUp;
+        private Long salesDropped;
+        private Long salesClosed;
+
+        // Recruitment calls by status
+        private Long recruitmentFollowUp;
+        private Long recruitmentDropped;
+        private Long recruitmentClosed;
+    }
+
     @Data
     @Builder
     @NoArgsConstructor
