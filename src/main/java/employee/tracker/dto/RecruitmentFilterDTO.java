@@ -1,7 +1,10 @@
 package employee.tracker.dto;
 
+import lombok.Builder;
+
 import java.time.LocalDateTime;
 
+@Builder
 public class RecruitmentFilterDTO {
     public LocalDateTime startDate;
     public LocalDateTime endDate;
