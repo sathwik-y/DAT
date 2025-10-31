@@ -1,12 +1,12 @@
 package employee.tracker.dto;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 import employee.tracker.enums.IMOptedPosition;
 import employee.tracker.enums.LeadSources;
 import employee.tracker.enums.Status;
 import lombok.Data;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Data
 public class NewRecruitmentDTO {
@@ -27,7 +27,8 @@ public class NewRecruitmentDTO {
     public String referredBy; // Self/Other IMs
     public LeadSources leadSources; // ENUM
 
-
+   private String imName;
+   private String areaName;
     // Recruitment Call
     public LocalDateTime followUpDate;
     public Status status; // ENUM

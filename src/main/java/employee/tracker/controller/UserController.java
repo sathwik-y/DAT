@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
+import org.springframework.transaction.annotation.Transactional;
 import employee.tracker.service.EmailService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -157,6 +157,7 @@ public class UserController {
 
     @PreAuthorize("hasAnyRole('ZH', 'RH', 'ARH', 'AM', 'NH')")
     @GetMapping("/myTeam")
+    @Transactional(readOnly = true)  // Add this annotation
     public ResponseEntity<List<Users>> getMyTeam(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();

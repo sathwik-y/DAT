@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -57,7 +58,15 @@ public class Sales {
     @JsonBackReference("user-sales")
     public Users createdBy;
 
+// Add these fields to the Sales class
 
+        @Column(name = "im_name")
+        private String imName;
+
+        @Column(name = "area_name")
+        private String areaName;
+
+// Add getters and setters (if not using Lombok)
     @OneToMany(mappedBy = "sale", cascade = CascadeType.PERSIST)
     @JsonManagedReference("sale-salesCall")
     public List<SalesCall> salesCalls;

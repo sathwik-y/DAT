@@ -1,10 +1,10 @@
 package employee.tracker.dto;
 
-import employee.tracker.enums.Status;
-import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import employee.tracker.enums.Status;
+import lombok.Data;
 
 @Data
 public class NewSalesDTO {
@@ -20,7 +20,10 @@ public class NewSalesDTO {
    public String product;
    // Created user will be set by the login,
    // And we add the new salesCall from the object we create
+   // Add these fields to NewSalesDTO
 
+   private String imName;
+   private String areaName;
    // Sales Call Entity Fields
    public LocalDateTime followUpDate;
    // Set the sale based on the above sale created
