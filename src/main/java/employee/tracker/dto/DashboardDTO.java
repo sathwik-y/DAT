@@ -19,10 +19,8 @@ public class DashboardDTO {
     private long totalRecruitmentCalls;
     private BigDecimal totalPremiumCollected;
     
-    // Regional breakdown
-    private List<RegionalMetrics> regionMetrics;
-    private List<AreaMetrics> areaMetrics;
-    private List<TerritoryMetrics> territoryMetrics;
+    // Unified team structure - replaces regionMetrics, areaMetrics, territoryMetrics
+    private List<TeamMetrics> teams;
     private StatusMetrics statusMetrics;
 
     @Data
@@ -45,32 +43,9 @@ public class DashboardDTO {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class RegionalMetrics {
-        private String regionName;
-        private long salesCalls;
-        private long recruitmentCalls;
-        private BigDecimal premiumCollected;
-        private List<UserMetrics> users;
-    }
-    
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class AreaMetrics {
-        private String areaName;
-        private long salesCalls;
-        private long recruitmentCalls;
-        private BigDecimal premiumCollected;
-        private List<UserMetrics> users;
-    }
-    
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class TerritoryMetrics {
-        private String territoryName;
+    public static class TeamMetrics {
+        private String teamName;        // e.g., "East Region", "Kolkata Area", "Salt Lake Territory"
+        private String teamType;        // "REGION", "AREA", or "TERRITORY"
         private long salesCalls;
         private long recruitmentCalls;
         private BigDecimal premiumCollected;

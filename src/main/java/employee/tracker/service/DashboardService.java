@@ -5,104 +5,432 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import employee.tracker.model.*;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import employee.tracker.dto.DashboardDTO;
+import employee.tracker.dto.DashboardDTO.StatusMetrics;
+import employee.tracker.dto.DashboardDTO.TeamMetrics;
+import employee.tracker.dto.DashboardDTO.UserMetrics;
 import employee.tracker.dto.RecruitmentFilterDTO;
 import employee.tracker.dto.SalesFilterDTO;
 import employee.tracker.enums.Role;
+import employee.tracker.enums.Status;
+import employee.tracker.model.Recruitment;
+import employee.tracker.model.RecruitmentCall;
+import employee.tracker.model.Sales;
+import employee.tracker.model.SalesCall;
+import employee.tracker.model.Users;
+import employee.tracker.repository.RecruitmentCallRepo;
+import employee.tracker.repository.SalesCallRepo;
+import employee.tracker.repository.UsersRepo;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class DashboardService {
-    
+
     private final SalesService salesService;
     private final RecruitmentService recruitmentService;
-    private final UserService userService;
+    private final SalesCallRepo salesCallRepo;
+    private final RecruitmentCallRepo recruitmentCallRepo;
+    private final UsersRepo usersRepo;
 
-    @Cacheable(value="dashboardData",key="#username + '-' + #salesFilters.hashCode() + '-' +  #recruitmentFilters.hashCode()")
+    @Transactional(readOnly = true)
+    @Cacheable(value = "dashboardData", key = "#username + '-' + #salesFilters.hashCode() + '-' + #recruitmentFilters.hashCode()")
     public DashboardDTO getDashboardData(String username, SalesFilterDTO salesFilters, RecruitmentFilterDTO recruitmentFilters) {
-        Users currentUser = userService.findByUserName(username);
-        
-        // Get data based on user role
-        List<Sales> salesData = getSalesDataByRole(username, currentUser.getRole(), salesFilters);
-        List<Recruitment> recruitmentData = getRecruitmentDataByRole(username, currentUser.getRole(), recruitmentFilters);
-        List<Users> allUsers = userService.getAllUsers();
+        Users user = usersRepo.findByUserName(username);
 
+        System.out.println("DashboardService: getDashboardData - user: " + username + ", role: " + user.getRole());
+
+        // Get sales and recruitment data based on user role
+        List<Sales> salesList = getSalesByRole(user, salesFilters);
+        List<Recruitment> recruitmentList = getRecruitmentsByRole(user, recruitmentFilters);
 
         // Calculate overall metrics
-        long totalSalesCalls = salesData.stream()
-            .mapToLong(sale -> sale.getSalesCalls().size())
-            .sum();
-            
-        long totalRecruitmentCalls = recruitmentData.stream()
-            .mapToLong(recruitment -> recruitment.getRecruitmentCalls().size())
-            .sum();
-            
-        BigDecimal totalPremium = salesData.stream()
-            .map(sale -> sale.getPremium() != null ? sale.getPremium() : BigDecimal.ZERO)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-        
-        // Calculate regional breakdown
-        List<DashboardDTO.RegionalMetrics> regionMetrics = calculateRegionalMetrics(salesData, recruitmentData,allUsers);
-        List<DashboardDTO.AreaMetrics> areaMetrics = calculateAreaMetrics(salesData, recruitmentData,allUsers);
-        List<DashboardDTO.TerritoryMetrics> territoryMetrics = calculateTerritoryMetrics(salesData, recruitmentData,allUsers);
+        long totalSalesCalls = salesList.stream()
+                .mapToLong(sale -> sale.getSalesCalls().size())
+                .sum();
 
-        // Calculate status metrics
-        DashboardDTO.StatusMetrics statusMetrics = calculateStatusMetrics(salesData, recruitmentData);
+        long totalRecruitmentCalls = recruitmentList.stream()
+                .mapToLong(recruitment -> recruitment.getRecruitmentCalls().size())
+                .sum();
+
+        BigDecimal totalPremiumCollected = salesList.stream()
+                .map(Sales::getPremium)
+                .filter(premium -> premium != null)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        // Get status metrics
+        StatusMetrics statusMetrics = getStatusMetrics(salesList, recruitmentList);
+
+        // Get team metrics based on role
+        List<TeamMetrics> teams = getTeamMetricsByRole(user, salesList, recruitmentList);
+
+        System.out.println("DashboardService: Total sales calls: " + totalSalesCalls + ", recruitment calls: " + totalRecruitmentCalls);
+        System.out.println("DashboardService: Total teams: " + teams.size());
 
         return DashboardDTO.builder()
                 .totalSalesCalls(totalSalesCalls)
                 .totalRecruitmentCalls(totalRecruitmentCalls)
-                .totalPremiumCollected(totalPremium)
-                .regionMetrics(regionMetrics)
-                .areaMetrics(areaMetrics)
-                .territoryMetrics(territoryMetrics)
+                .totalPremiumCollected(totalPremiumCollected)
+                .teams(teams)
                 .statusMetrics(statusMetrics)
                 .build();
     }
 
-    // Add new method to calculate status metrics
-    private DashboardDTO.StatusMetrics calculateStatusMetrics(List<Sales> salesData, List<Recruitment> recruitmentData) {
+    private List<TeamMetrics> getTeamMetricsByRole(Users user, List<Sales> salesList, List<Recruitment> recruitmentList) {
+        List<TeamMetrics> teams = new ArrayList<>();
+
+        switch (user.getRole()) {
+            case ZH: // Zonal Head - show each region in their zone as separate teams
+                teams = getRegionTeamsForZH(user, salesList, recruitmentList);
+                break;
+
+            case RH:
+            case ARH: // Regional Head - show region team + optional area/territory team
+                teams = getTeamsForRH(user, salesList, recruitmentList);
+                break;
+
+            case AM: // Area Manager - show all TMs in their area as one team
+                teams = getTeamForAM(user, salesList, recruitmentList);
+                break;
+
+            case TM: // Territory Manager - no team to manage
+                teams = new ArrayList<>();
+                break;
+
+            case NH: // National Head - show all zones as separate teams
+                teams = getZoneTeamsForNH(salesList, recruitmentList);
+                break;
+
+            default:
+                teams = new ArrayList<>();
+        }
+
+        return teams;
+    }
+
+    // ZH: Get all regions in their zone as separate teams
+    private List<TeamMetrics> getRegionTeamsForZH(Users user, List<Sales> salesList, List<Recruitment> recruitmentList) {
+        Map<String, TeamMetrics> regionTeamsMap = new HashMap<>();
+
+        // Get all users in the same zone
+        List<Users> zoneUsers = usersRepo.findAll().stream()
+                .filter(u -> u.getZone() == user.getZone() && u.getRole() != Role.ZH)
+                .collect(Collectors.toList());
+
+        // Group by region
+        for (Users teamUser : zoneUsers) {
+            if (teamUser.getRegion() == null) continue;
+
+            String regionKey = teamUser.getRegion().name();
+            
+            if (!regionTeamsMap.containsKey(regionKey)) {
+                regionTeamsMap.put(regionKey, TeamMetrics.builder()
+                        .teamName(formatEnumValue(teamUser.getRegion().name()) + " Region")
+                        .teamType("REGION")
+                        .salesCalls(0)
+                        .recruitmentCalls(0)
+                        .premiumCollected(BigDecimal.ZERO)
+                        .users(new ArrayList<>())
+                        .build());
+            }
+
+            // Add user metrics
+            UserMetrics userMetrics = calculateUserMetrics(teamUser, salesList, recruitmentList);
+            regionTeamsMap.get(regionKey).getUsers().add(userMetrics);
+            
+            // Update team totals
+            TeamMetrics team = regionTeamsMap.get(regionKey);
+            team.setSalesCalls(team.getSalesCalls() + userMetrics.getSalesCalls());
+            team.setRecruitmentCalls(team.getRecruitmentCalls() + userMetrics.getRecruitmentCalls());
+            team.setPremiumCollected(team.getPremiumCollected().add(userMetrics.getPremiumCollected()));
+        }
+
+        return new ArrayList<>(regionTeamsMap.values());
+    }
+
+    // RH/ARH: Get region team + optional area/territory team
+    private List<TeamMetrics> getTeamsForRH(Users user, List<Sales> salesList, List<Recruitment> recruitmentList) {
+        List<TeamMetrics> teams = new ArrayList<>();
+
+        // Get all users in the same region (excluding RH/ARH role)
+        List<Users> regionUsers = usersRepo.findAll().stream()
+                .filter(u -> u.getRegion() == user.getRegion() && u.getRole() != Role.RH && u.getRole() != Role.ARH)
+                .collect(Collectors.toList());
+
+        // Create region team
+        TeamMetrics regionTeam = TeamMetrics.builder()
+                .teamName(formatEnumValue(user.getRegion().name()) + " Region")
+                .teamType("REGION")
+                .salesCalls(0)
+                .recruitmentCalls(0)
+                .premiumCollected(BigDecimal.ZERO)
+                .users(new ArrayList<>())
+                .build();
+
+        for (Users teamUser : regionUsers) {
+            UserMetrics userMetrics = calculateUserMetrics(teamUser, salesList, recruitmentList);
+            regionTeam.getUsers().add(userMetrics);
+            regionTeam.setSalesCalls(regionTeam.getSalesCalls() + userMetrics.getSalesCalls());
+            regionTeam.setRecruitmentCalls(regionTeam.getRecruitmentCalls() + userMetrics.getRecruitmentCalls());
+            regionTeam.setPremiumCollected(regionTeam.getPremiumCollected().add(userMetrics.getPremiumCollected()));
+        }
+
+        teams.add(regionTeam);
+
+        // If RH/ARH has an area assigned, add area team
+        if (user.getArea() != null) {
+            List<Users> areaUsers = usersRepo.findAll().stream()
+                    .filter(u -> u.getArea() == user.getArea() && u.getRole() == Role.TM)
+                    .collect(Collectors.toList());
+
+            if (!areaUsers.isEmpty()) {
+                TeamMetrics areaTeam = TeamMetrics.builder()
+                        .teamName(formatEnumValue(user.getArea().name()) + " Area")
+                        .teamType("AREA")
+                        .salesCalls(0)
+                        .recruitmentCalls(0)
+                        .premiumCollected(BigDecimal.ZERO)
+                        .users(new ArrayList<>())
+                        .build();
+
+                for (Users teamUser : areaUsers) {
+                    UserMetrics userMetrics = calculateUserMetrics(teamUser, salesList, recruitmentList);
+                    areaTeam.getUsers().add(userMetrics);
+                    areaTeam.setSalesCalls(areaTeam.getSalesCalls() + userMetrics.getSalesCalls());
+                    areaTeam.setRecruitmentCalls(areaTeam.getRecruitmentCalls() + userMetrics.getRecruitmentCalls());
+                    areaTeam.setPremiumCollected(areaTeam.getPremiumCollected().add(userMetrics.getPremiumCollected()));
+                }
+
+                teams.add(areaTeam);
+            }
+        }
+
+        // If RH/ARH has a territory assigned, add territory team
+        if (user.getTerritory() != null) {
+            List<Users> territoryUsers = usersRepo.findAll().stream()
+                    .filter(u -> u.getTerritory() == user.getTerritory() && u.getRole() == Role.TM)
+                    .collect(Collectors.toList());
+
+            if (!territoryUsers.isEmpty()) {
+                TeamMetrics territoryTeam = TeamMetrics.builder()
+                        .teamName(formatEnumValue(user.getTerritory().name()) + " Territory")
+                        .teamType("TERRITORY")
+                        .salesCalls(0)
+                        .recruitmentCalls(0)
+                        .premiumCollected(BigDecimal.ZERO)
+                        .users(new ArrayList<>())
+                        .build();
+
+                for (Users teamUser : territoryUsers) {
+                    UserMetrics userMetrics = calculateUserMetrics(teamUser, salesList, recruitmentList);
+                    territoryTeam.getUsers().add(userMetrics);
+                    territoryTeam.setSalesCalls(territoryTeam.getSalesCalls() + userMetrics.getSalesCalls());
+                    territoryTeam.setRecruitmentCalls(territoryTeam.getRecruitmentCalls() + userMetrics.getRecruitmentCalls());
+                    territoryTeam.setPremiumCollected(territoryTeam.getPremiumCollected().add(userMetrics.getPremiumCollected()));
+                }
+
+                teams.add(territoryTeam);
+            }
+        }
+
+        return teams;
+    }
+
+    // AM: Get all TMs in their area as one team
+    private List<TeamMetrics> getTeamForAM(Users user, List<Sales> salesList, List<Recruitment> recruitmentList) {
+        List<TeamMetrics> teams = new ArrayList<>();
+
+        // Get all TMs in the same area
+        List<Users> areaUsers = usersRepo.findAll().stream()
+                .filter(u -> u.getArea() == user.getArea() && u.getRole() == Role.TM)
+                .collect(Collectors.toList());
+
+        if (!areaUsers.isEmpty()) {
+            TeamMetrics areaTeam = TeamMetrics.builder()
+                    .teamName(formatEnumValue(user.getArea().name()) + " Area")
+                    .teamType("AREA")
+                    .salesCalls(0)
+                    .recruitmentCalls(0)
+                    .premiumCollected(BigDecimal.ZERO)
+                    .users(new ArrayList<>())
+                    .build();
+
+            for (Users teamUser : areaUsers) {
+                UserMetrics userMetrics = calculateUserMetrics(teamUser, salesList, recruitmentList);
+                areaTeam.getUsers().add(userMetrics);
+                areaTeam.setSalesCalls(areaTeam.getSalesCalls() + userMetrics.getSalesCalls());
+                areaTeam.setRecruitmentCalls(areaTeam.getRecruitmentCalls() + userMetrics.getRecruitmentCalls());
+                areaTeam.setPremiumCollected(areaTeam.getPremiumCollected().add(userMetrics.getPremiumCollected()));
+            }
+
+            teams.add(areaTeam);
+        }
+
+        return teams;
+    }
+
+    // NH: Get all zones as separate teams
+    private List<TeamMetrics> getZoneTeamsForNH(List<Sales> salesList, List<Recruitment> recruitmentList) {
+        Map<String, TeamMetrics> zoneTeamsMap = new HashMap<>();
+
+        // Get all users
+        List<Users> allUsers = usersRepo.findAll();
+
+        // Group by zone
+        for (Users teamUser : allUsers) {
+            if (teamUser.getZone() == null || teamUser.getRole() == Role.NH) continue;
+
+            String zoneKey = teamUser.getZone().name();
+            
+            if (!zoneTeamsMap.containsKey(zoneKey)) {
+                zoneTeamsMap.put(zoneKey, TeamMetrics.builder()
+                        .teamName(formatEnumValue(teamUser.getZone().name()) + " Zone")
+                        .teamType("ZONE")
+                        .salesCalls(0)
+                        .recruitmentCalls(0)
+                        .premiumCollected(BigDecimal.ZERO)
+                        .users(new ArrayList<>())
+                        .build());
+            }
+
+            // Add user metrics
+            UserMetrics userMetrics = calculateUserMetrics(teamUser, salesList, recruitmentList);
+            zoneTeamsMap.get(zoneKey).getUsers().add(userMetrics);
+            
+            // Update team totals
+            TeamMetrics team = zoneTeamsMap.get(zoneKey);
+            team.setSalesCalls(team.getSalesCalls() + userMetrics.getSalesCalls());
+            team.setRecruitmentCalls(team.getRecruitmentCalls() + userMetrics.getRecruitmentCalls());
+            team.setPremiumCollected(team.getPremiumCollected().add(userMetrics.getPremiumCollected()));
+        }
+
+        return new ArrayList<>(zoneTeamsMap.values());
+    }
+
+    private UserMetrics calculateUserMetrics(Users user, List<Sales> salesList, List<Recruitment> recruitmentList) {
+        // Filter sales and recruitments created by this user
+        long userSalesCalls = salesList.stream()
+                .filter(sale -> sale.getCreatedBy().getUserName().equals(user.getUserName()))
+                .mapToLong(sale -> sale.getSalesCalls().size())
+                .sum();
+
+        long userRecruitmentCalls = recruitmentList.stream()
+                .filter(recruitment -> recruitment.getCreatedBy().getUserName().equals(user.getUserName()))
+                .mapToLong(recruitment -> recruitment.getRecruitmentCalls().size())
+                .sum();
+
+        BigDecimal userPremium = salesList.stream()
+                .filter(sale -> sale.getCreatedBy().getUserName().equals(user.getUserName()))
+                .map(Sales::getPremium)
+                .filter(premium -> premium != null)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return UserMetrics.builder()
+                .userName(user.getUserName())
+                .name(user.getName())
+                .role(user.getRole().name())
+                .salesCalls(userSalesCalls)
+                .recruitmentCalls(userRecruitmentCalls)
+                .premiumCollected(userPremium)
+                .build();
+    }
+
+    private String formatEnumValue(String enumValue) {
+        if (enumValue == null) return "";
+
+        return java.util.Arrays.stream(enumValue.replace("_", " ").toLowerCase().split(" "))
+                .map(word -> word.isEmpty() ? "" : Character.toUpperCase(word.charAt(0)) + word.substring(1))
+                .collect(java.util.stream.Collectors.joining(" "));
+    }
+
+    // ... rest of the existing methods (getSalesByRole, getRecruitmentsByRole, getStatusMetrics) remain the same
+    
+    private List<Sales> getSalesByRole(Users user, SalesFilterDTO filters) {
+        try {
+            switch (user.getRole()) {
+                case NH:
+                    return salesService.getAllSales(filters);
+                case ZH:
+                    return salesService.getZonalSales(user.getUserName(), filters);
+                case RH:
+                case ARH:
+                    return salesService.getRegionalSales(user.getUserName(), filters);
+                case AM:
+                    return salesService.getAreaSales(user.getUserName(), filters);
+                case TM:
+                    return salesService.getTerritorialSales(user.getUserName(), filters);
+                default:
+                    return salesService.findMySales(user.getUserName());
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting sales for user " + user.getUserName() + ": " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    private List<Recruitment> getRecruitmentsByRole(Users user, RecruitmentFilterDTO filters) {
+        try {
+            switch (user.getRole()) {
+                case NH:
+                    return recruitmentService.getAllRecruitments(filters);
+                case ZH:
+                    return recruitmentService.getZonalRecruitments(user.getUserName(), filters);
+                case RH:
+                case ARH:
+                    return recruitmentService.getRegionalRecruitments(user.getUserName(), filters);
+                case AM:
+                    return recruitmentService.getAreaRecruitments(user.getUserName(), filters);
+                case TM:
+                    return recruitmentService.getTerritorialRecruitments(user.getUserName(), filters);
+                default:
+                    return recruitmentService.findMyRecruitments(user.getUserName());
+            }
+        } catch (Exception e) {
+            System.err.println("Error getting recruitments for user " + user.getUserName() + ": " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    private StatusMetrics getStatusMetrics(List<Sales> salesList, List<Recruitment> recruitmentList) {
         // Count sales calls by status
-        long salesFollowUp = 0, salesDropped = 0, salesClosed = 0;
-        long recruitmentFollowUp = 0, recruitmentDropped = 0, recruitmentClosed = 0;
+        long salesFollowUp = salesList.stream()
+                .flatMap(sale -> sale.getSalesCalls().stream())
+                .filter(call -> call.getStatus() == Status.FOLLOWUP)
+                .count();
 
-        // Process sales calls
-        for (Sales sale : salesData) {
-            if (sale.getSalesCalls() != null) {
-                for (SalesCall call : sale.getSalesCalls()) {
-                    if (call.getStatus() != null) {
-                        switch (call.getStatus()) {
-                            case FOLLOWUP -> salesFollowUp++;
-                            case DROPPED -> salesDropped++;
-                            case CLOSED -> salesClosed++;
-                        }
-                    }
-                }
-            }
-        }
+        long salesDropped = salesList.stream()
+                .flatMap(sale -> sale.getSalesCalls().stream())
+                .filter(call -> call.getStatus() == Status.DROPPED)
+                .count();
 
-        // Process recruitment calls
-        for (Recruitment recruitment : recruitmentData) {
-            if (recruitment.getRecruitmentCalls() != null) {
-                for (RecruitmentCall call : recruitment.getRecruitmentCalls()) {
-                    if (call.getStatus() != null) {
-                        switch (call.getStatus()) {
-                            case FOLLOWUP -> recruitmentFollowUp++;
-                            case DROPPED -> recruitmentDropped++;
-                            case CLOSED -> recruitmentClosed++;
-                        }
-                    }
-                }
-            }
-        }
+        long salesClosed = salesList.stream()
+                .flatMap(sale -> sale.getSalesCalls().stream())
+                .filter(call -> call.getStatus() == Status.CLOSED)
+                .count();
 
-        return DashboardDTO.StatusMetrics.builder()
+        // Count recruitment calls by status
+        long recruitmentFollowUp = recruitmentList.stream()
+                .flatMap(recruitment -> recruitment.getRecruitmentCalls().stream())
+                .filter(call -> call.getStatus() == Status.FOLLOWUP)
+                .count();
+
+        long recruitmentDropped = recruitmentList.stream()
+                .flatMap(recruitment -> recruitment.getRecruitmentCalls().stream())
+                .filter(call -> call.getStatus() == Status.DROPPED)
+                .count();
+
+        long recruitmentClosed = recruitmentList.stream()
+                .flatMap(recruitment -> recruitment.getRecruitmentCalls().stream())
+                .filter(call -> call.getStatus() == Status.CLOSED)
+                .count();
+
+        return StatusMetrics.builder()
                 .salesFollowUp(salesFollowUp)
                 .salesDropped(salesDropped)
                 .salesClosed(salesClosed)
@@ -110,319 +438,5 @@ public class DashboardService {
                 .recruitmentDropped(recruitmentDropped)
                 .recruitmentClosed(recruitmentClosed)
                 .build();
-    }
-    
-    private List<Sales> getSalesDataByRole(String username, Role role, SalesFilterDTO filters) {
-        return switch (role) {
-            case ZH -> salesService.getZonalSales(username, filters);
-            case RH, ARH -> salesService.getRegionalSales(username, filters);
-            case TM -> salesService.getTerritorialSales(username, filters);
-            case AM -> salesService.getAreaSales(username, filters);
-            case NH -> salesService.getAllSales(filters);
-            default -> salesService.findMySales(username);
-        };
-    }
-    
-    private List<Recruitment> getRecruitmentDataByRole(String username, Role role, RecruitmentFilterDTO filters) {
-        return switch (role) {
-            case ZH -> recruitmentService.getZonalRecruitments(username, filters);
-            case RH, ARH -> recruitmentService.getRegionalRecruitments(username, filters);
-            case TM -> recruitmentService.getTerritorialRecruitments(username, filters);
-            case AM -> recruitmentService.getAreaRecruitments(username, filters);
-            case NH -> recruitmentService.getAllRecruitments(filters);
-            default -> recruitmentService.findMyRecruitments(username);
-        };
-    }
-    
-    private List<DashboardDTO.RegionalMetrics> calculateRegionalMetrics(List<Sales> salesData, List<Recruitment> recruitmentData,List<Users> allUsers) {
-
-        Map<String, DashboardDTO.RegionalMetrics> regionMap = new HashMap<>();
-        
-        // First, get all possible regions from Users table to ensure we show 0 counts
-//        List<Users> allUsers = userService.getAllUsers();
-        for (Users user : allUsers) {
-            if (user.getRegion() != null) {
-                String regionName = user.getRegion().name();
-                regionMap.computeIfAbsent(regionName, 
-                    k -> DashboardDTO.RegionalMetrics.builder()
-                        .regionName(regionName)
-                        .salesCalls(0)
-                        .recruitmentCalls(0)
-                        .premiumCollected(BigDecimal.ZERO)
-                        .users(new ArrayList<>())
-                        .build());
-            }
-        }
-        
-        // Process sales data
-        for (Sales sale : salesData) {
-            Users user = sale.getCreatedBy();
-            if (user.getRegion() != null) {
-                String regionName = user.getRegion().name();
-                DashboardDTO.RegionalMetrics metrics = regionMap.get(regionName);
-                if (metrics != null) {
-                    metrics.setSalesCalls(metrics.getSalesCalls() + sale.getSalesCalls().size());
-                    metrics.setPremiumCollected(metrics.getPremiumCollected().add(
-                        sale.getPremium() != null ? sale.getPremium() : BigDecimal.ZERO));
-                }
-            }
-        }
-        
-        // Process recruitment data
-        for (Recruitment recruitment : recruitmentData) {
-            Users user = recruitment.getCreatedBy();
-            if (user.getRegion() != null) {
-                String regionName = user.getRegion().name();
-                DashboardDTO.RegionalMetrics metrics = regionMap.get(regionName);
-                if (metrics != null) {
-                    metrics.setRecruitmentCalls(metrics.getRecruitmentCalls() + recruitment.getRecruitmentCalls().size());
-                }
-            }
-        }
-        
-        // Calculate user metrics for each region (including users with 0 calls)
-        for (DashboardDTO.RegionalMetrics metrics : regionMap.values()) {
-            metrics.setUsers(calculateAllUserMetricsForRegion(metrics.getRegionName(), salesData, recruitmentData, allUsers));
-        }
-        
-        return new ArrayList<>(regionMap.values());
-    }
-    
-    private List<DashboardDTO.AreaMetrics> calculateAreaMetrics(List<Sales> salesData, List<Recruitment> recruitmentData,List<Users> allUsers) {
-        Map<String, DashboardDTO.AreaMetrics> areaMap = new HashMap<>();
-        
-        // First, get all possible areas from Users table to ensure we show 0 counts
-//        List<Users> allUsers = userService.getAllUsers();
-        for (Users user : allUsers) {
-            if (user.getArea() != null) {
-                String areaName = user.getArea().name();
-                areaMap.computeIfAbsent(areaName, 
-                    k -> DashboardDTO.AreaMetrics.builder()
-                        .areaName(areaName)
-                        .salesCalls(0)
-                        .recruitmentCalls(0)
-                        .premiumCollected(BigDecimal.ZERO)
-                        .users(new ArrayList<>())
-                        .build());
-            }
-        }
-        
-        // Process sales data
-        for (Sales sale : salesData) {
-            Users user = sale.getCreatedBy();
-            if (user.getArea() != null) {
-                String areaName = user.getArea().name();
-                DashboardDTO.AreaMetrics metrics = areaMap.get(areaName);
-                if (metrics != null) {
-                    metrics.setSalesCalls(metrics.getSalesCalls() + sale.getSalesCalls().size());
-                    metrics.setPremiumCollected(metrics.getPremiumCollected().add(
-                        sale.getPremium() != null ? sale.getPremium() : BigDecimal.ZERO));
-                }
-            }
-        }
-        
-        // Process recruitment data
-        for (Recruitment recruitment : recruitmentData) {
-            Users user = recruitment.getCreatedBy();
-            if (user.getArea() != null) {
-                String areaName = user.getArea().name();
-                DashboardDTO.AreaMetrics metrics = areaMap.get(areaName);
-                if (metrics != null) {
-                    metrics.setRecruitmentCalls(metrics.getRecruitmentCalls() + recruitment.getRecruitmentCalls().size());
-                }
-            }
-        }
-        
-        // Calculate user metrics for each area
-        for (DashboardDTO.AreaMetrics metrics : areaMap.values()) {
-            metrics.setUsers(calculateAllUserMetricsForArea(metrics.getAreaName(), salesData, recruitmentData, allUsers));
-        }
-        
-        return new ArrayList<>(areaMap.values());
-    }
-    
-    private List<DashboardDTO.TerritoryMetrics> calculateTerritoryMetrics(List<Sales> salesData, List<Recruitment> recruitmentData,List<Users> allUsers) {
-        Map<String, DashboardDTO.TerritoryMetrics> territoryMap = new HashMap<>();
-        
-        // First, get all possible territories from Users table to ensure we show 0 counts
-//        List<Users> allUsers = userService.getAllUsers();
-        for (Users user : allUsers) {
-            if (user.getTerritory() != null) {
-                String territoryName = user.getTerritory().name();
-                territoryMap.computeIfAbsent(territoryName, 
-                    k -> DashboardDTO.TerritoryMetrics.builder()
-                        .territoryName(territoryName)
-                        .salesCalls(0)
-                        .recruitmentCalls(0)
-                        .premiumCollected(BigDecimal.ZERO)
-                        .users(new ArrayList<>())
-                        .build());
-            }
-        }
-        
-        // Process sales data
-        for (Sales sale : salesData) {
-            Users user = sale.getCreatedBy();
-            if (user.getTerritory() != null) {
-                String territoryName = user.getTerritory().name();
-                DashboardDTO.TerritoryMetrics metrics = territoryMap.get(territoryName);
-                if (metrics != null) {
-                    metrics.setSalesCalls(metrics.getSalesCalls() + sale.getSalesCalls().size());
-                    metrics.setPremiumCollected(metrics.getPremiumCollected().add(
-                        sale.getPremium() != null ? sale.getPremium() : BigDecimal.ZERO));
-                }
-            }
-        }
-        
-        // Process recruitment data
-        for (Recruitment recruitment : recruitmentData) {
-            Users user = recruitment.getCreatedBy();
-            if (user.getTerritory() != null) {
-                String territoryName = user.getTerritory().name();
-                DashboardDTO.TerritoryMetrics metrics = territoryMap.get(territoryName);
-                if (metrics != null) {
-                    metrics.setRecruitmentCalls(metrics.getRecruitmentCalls() + recruitment.getRecruitmentCalls().size());
-                }
-            }
-        }
-        
-        // Calculate user metrics for each territory
-        for (DashboardDTO.TerritoryMetrics metrics : territoryMap.values()) {
-            metrics.setUsers(calculateAllUserMetricsForTerritory(metrics.getTerritoryName(), salesData, recruitmentData, allUsers));
-        }
-        
-        return new ArrayList<>(territoryMap.values());
-    }
-    
-    private List<DashboardDTO.UserMetrics> calculateAllUserMetricsForRegion(String regionName, List<Sales> salesData, List<Recruitment> recruitmentData, List<Users> allUsers) {
-        Map<String, DashboardDTO.UserMetrics> userMap = new HashMap<>();
-        
-        // First, add all users in this region with 0 counts
-        for (Users user : allUsers) {
-            if (user.getRegion() != null && user.getRegion().name().equals(regionName)) {
-                userMap.put(user.getUserName(), 
-                    DashboardDTO.UserMetrics.builder()
-                        .userName(user.getUserName())
-                        .name(user.getName())
-                        .role(user.getRole().name())
-                        .salesCalls(0)
-                        .recruitmentCalls(0)
-                        .premiumCollected(BigDecimal.ZERO)
-                        .build());
-            }
-        }
-        
-        // Then update with actual data
-        for (Sales sale : salesData) {
-            Users user = sale.getCreatedBy();
-            if (user.getRegion() != null && user.getRegion().name().equals(regionName)) {
-                DashboardDTO.UserMetrics metrics = userMap.get(user.getUserName());
-                if (metrics != null) {
-                    metrics.setSalesCalls(metrics.getSalesCalls() + sale.getSalesCalls().size());
-                    metrics.setPremiumCollected(metrics.getPremiumCollected().add(
-                        sale.getPremium() != null ? sale.getPremium() : BigDecimal.ZERO));
-                }
-            }
-        }
-        
-        for (Recruitment recruitment : recruitmentData) {
-            Users user = recruitment.getCreatedBy();
-            if (user.getRegion() != null && user.getRegion().name().equals(regionName)) {
-                DashboardDTO.UserMetrics metrics = userMap.get(user.getUserName());
-                if (metrics != null) {
-                    metrics.setRecruitmentCalls(metrics.getRecruitmentCalls() + recruitment.getRecruitmentCalls().size());
-                }
-            }
-        }
-        
-        return new ArrayList<>(userMap.values());
-    }
-    
-    private List<DashboardDTO.UserMetrics> calculateAllUserMetricsForArea(String areaName, List<Sales> salesData, List<Recruitment> recruitmentData, List<Users> allUsers) {
-        Map<String, DashboardDTO.UserMetrics> userMap = new HashMap<>();
-        
-        // First, add all users in this area with 0 counts
-        for (Users user : allUsers) {
-            if (user.getArea() != null && user.getArea().name().equals(areaName)) {
-                userMap.put(user.getUserName(), 
-                    DashboardDTO.UserMetrics.builder()
-                        .userName(user.getUserName())
-                        .name(user.getName())
-                        .role(user.getRole().name())
-                        .salesCalls(0)
-                        .recruitmentCalls(0)
-                        .premiumCollected(BigDecimal.ZERO)
-                        .build());
-            }
-        }
-        
-        // Then update with actual data
-        for (Sales sale : salesData) {
-            Users user = sale.getCreatedBy();
-            if (user.getArea() != null && user.getArea().name().equals(areaName)) {
-                DashboardDTO.UserMetrics metrics = userMap.get(user.getUserName());
-                if (metrics != null) {
-                    metrics.setSalesCalls(metrics.getSalesCalls() + sale.getSalesCalls().size());
-                    metrics.setPremiumCollected(metrics.getPremiumCollected().add(
-                        sale.getPremium() != null ? sale.getPremium() : BigDecimal.ZERO));
-                }
-            }
-        }
-        
-        for (Recruitment recruitment : recruitmentData) {
-            Users user = recruitment.getCreatedBy();
-            if (user.getArea() != null && user.getArea().name().equals(areaName)) {
-                DashboardDTO.UserMetrics metrics = userMap.get(user.getUserName());
-                if (metrics != null) {
-                    metrics.setRecruitmentCalls(metrics.getRecruitmentCalls() + recruitment.getRecruitmentCalls().size());
-                }
-            }
-        }
-        
-        return new ArrayList<>(userMap.values());
-    }
-    
-    private List<DashboardDTO.UserMetrics> calculateAllUserMetricsForTerritory(String territoryName, List<Sales> salesData, List<Recruitment> recruitmentData, List<Users> allUsers) {
-        Map<String, DashboardDTO.UserMetrics> userMap = new HashMap<>();
-        
-        // First, add all users in this territory with 0 counts
-        for (Users user : allUsers) {
-            if (user.getTerritory() != null && user.getTerritory().name().equals(territoryName)) {
-                userMap.put(user.getUserName(), 
-                    DashboardDTO.UserMetrics.builder()
-                        .userName(user.getUserName())
-                        .name(user.getName())
-                        .role(user.getRole().name())
-                        .salesCalls(0)
-                        .recruitmentCalls(0)
-                        .premiumCollected(BigDecimal.ZERO)
-                        .build());
-            }
-        }
-        
-        // Then update with actual data
-        for (Sales sale : salesData) {
-            Users user = sale.getCreatedBy();
-            if (user.getTerritory() != null && user.getTerritory().name().equals(territoryName)) {
-                DashboardDTO.UserMetrics metrics = userMap.get(user.getUserName());
-                if (metrics != null) {
-                    metrics.setSalesCalls(metrics.getSalesCalls() + sale.getSalesCalls().size());
-                    metrics.setPremiumCollected(metrics.getPremiumCollected().add(
-                        sale.getPremium() != null ? sale.getPremium() : BigDecimal.ZERO));
-                }
-            }
-        }
-        
-        for (Recruitment recruitment : recruitmentData) {
-            Users user = recruitment.getCreatedBy();
-            if (user.getTerritory() != null && user.getTerritory().name().equals(territoryName)) {
-                DashboardDTO.UserMetrics metrics = userMap.get(user.getUserName());
-                if (metrics != null) {
-                    metrics.setRecruitmentCalls(metrics.getRecruitmentCalls() + recruitment.getRecruitmentCalls().size());
-                }
-            }
-        }
-        
-        return new ArrayList<>(userMap.values());
     }
 }
