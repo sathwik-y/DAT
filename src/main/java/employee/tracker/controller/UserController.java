@@ -118,7 +118,7 @@ public class UserController {
 
         if(user.isFirstLogin()){
             // Generate OTP and send email
-            otpService.generateOtp(user.getUserName(), user.getEmailId());
+            otpService.generateOtp(user.getUserName(), user.getPhoneNo());
 
             Map<String,String> response = new HashMap<>();
             response.put("message","OTP sent to your email. Please verify and reset your password.");
@@ -187,16 +187,21 @@ public class UserController {
 
     @PostMapping("/request-password-reset")
     public ResponseEntity<Map<String,String>> requestPasswordReset(@RequestBody Map<String,String> request) {
-        String username = request.get("userName");
-        Users user = userService.findByUserName(username);
-        if(user == null)
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("message","User not found"));
+        try {
+            String username = request.get("userName");
+            Users user = userService.findByUserName(username);
+            if(user == null)
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("message","User not found"));
 
-        String otp = userService.generateOtp(user); // generates and saves in Otps table
-        emailService.sendOtpEmail(user.getEmailId(), otp); // your email sending logic
+            otpService.generateOtp(user.getUserName(), user.getPhoneNo());
+            return ResponseEntity.ok(Map.of("message","OTP sent to your registered phone number."));
 
-        return ResponseEntity.ok(Map.of("message","OTP sent to your registered email."));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Failed to send OTP: " + e.getMessage()));
+        }
     }
 
 
@@ -210,13 +215,14 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("message","User not found"));
 
-        boolean valid = userService.verifyOtp(user, otp);
+        boolean valid = otpService.validateOtp(user.getUserName(), otp);
         if(!valid)
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message","Invalid or expired OTP"));
 
         return ResponseEntity.ok(Map.of("message","OTP verified. You can reset your password."));
     }
+
 
 
     @PostMapping("/reset-password")

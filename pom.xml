@@ -46,6 +46,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>sns</artifactId>
+			<version>2.20.0</version> <!-- pick latest stable compatible -->
+		</dependency>
+
 		<!-- pom.xml -->
 		<dependency>
 			<groupId>com.github.ben-manes.caffeine</groupId>
