@@ -9,16 +9,14 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import employee.tracker.dto.RecruitmentFilterDTO;
+import employee.tracker.dto.SalesFilterDTO;
 import employee.tracker.dto.TodoDTO;
 import employee.tracker.dto.TodoFilterDTO;
-import employee.tracker.dto.SalesFilterDTO;
-import employee.tracker.dto.RecruitmentFilterDTO;
-import employee.tracker.model.Users;
-import employee.tracker.model.Sales;
 import employee.tracker.model.Recruitment;
+import employee.tracker.model.Sales;
+import employee.tracker.model.Users;
 import employee.tracker.repository.UsersRepo;
-import employee.tracker.service.SalesService;
-import employee.tracker.service.RecruitmentService;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -141,6 +139,10 @@ public class TodoService {
     private List<TodoDTO> extractSalesTodos(List<Sales> salesList, TodoFilterDTO filters) {
         LocalDateTime now = LocalDateTime.now();
         
+        // Get date range from filters
+        LocalDateTime startDate = filters.getStartDate() != null ? filters.getStartDate() : now;
+        LocalDateTime endDate = filters.getEndDate() != null ? filters.getEndDate() : now.plusYears(10);
+        
         return salesList.stream()
             .flatMap(sales -> {
                 // Force initialization of lazy collections inside transaction
@@ -149,6 +151,8 @@ public class TodoService {
             })
             .filter(sc -> sc.getFollowUpDate() != null) // Must have follow-up date
             .filter(sc -> sc.getFollowUpDate().isAfter(now)) // Future follow-ups only
+            // ADD THIS: Filter by date range from filters
+            .filter(sc -> !sc.getFollowUpDate().isBefore(startDate) && !sc.getFollowUpDate().isAfter(endDate))
             .filter(sc -> !filters.hasStatus() || sc.getStatus() == filters.getStatus())
             .filter(sc -> !filters.hasRegion() || sc.getLoggedBy().getRegion() == filters.getRegion())
             .map(sc -> {
@@ -172,6 +176,10 @@ public class TodoService {
     private List<TodoDTO> extractRecruitmentTodos(List<Recruitment> recruitmentList, TodoFilterDTO filters) {
         LocalDateTime now = LocalDateTime.now();
         
+        // Get date range from filters
+        LocalDateTime startDate = filters.getStartDate() != null ? filters.getStartDate() : now;
+        LocalDateTime endDate = filters.getEndDate() != null ? filters.getEndDate() : now.plusYears(10);
+        
         return recruitmentList.stream()
             .flatMap(recruitment -> {
                 // Force initialization of lazy collections inside transaction
@@ -180,6 +188,8 @@ public class TodoService {
             })
             .filter(rc -> rc.getFollowUpDate() != null) // Must have follow-up date
             .filter(rc -> rc.getFollowUpDate().isAfter(now)) // Future follow-ups only
+            // ADD THIS: Filter by date range from filters
+            .filter(rc -> !rc.getFollowUpDate().isBefore(startDate) && !rc.getFollowUpDate().isAfter(endDate))
             .filter(rc -> !filters.hasStatus() || rc.getStatus() == filters.getStatus())
             .filter(rc -> !filters.hasRegion() || rc.getLoggedBy().getRegion() == filters.getRegion())
             .map(rc -> {

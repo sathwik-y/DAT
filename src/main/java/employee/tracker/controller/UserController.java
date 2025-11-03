@@ -1,12 +1,9 @@
 package employee.tracker.controller;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
-import org.springframework.transaction.annotation.Transactional;
-import employee.tracker.service.EmailService;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,6 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import employee.tracker.model.Users;
 import employee.tracker.repository.UsersRepo;
+import employee.tracker.service.EmailService;
 import employee.tracker.service.OtpService;
 import employee.tracker.service.UserService;
 import employee.tracker.utility.JwtUtil;
@@ -110,19 +109,18 @@ public class UserController {
         } catch (Exception e) {
             System.out.println("Authentication failed: " + e.getMessage());
             e.printStackTrace();
-            throw e; // Re-throw to see the actual error
+            throw e;
         }
 
         Users user = userService.findByUserName(username);
         if(user==null) throw new RuntimeException("User not Found");
 
+        // MODIFIED: Skip OTP, go directly to password reset
         if(user.isFirstLogin()){
-            // Generate OTP and send email
-            otpService.generateOtp(user.getUserName(), user.getPhoneNo());
-
             Map<String,String> response = new HashMap<>();
-            response.put("message","OTP sent to your email. Please verify and reset your password.");
-            response.put("status","OTP_REQUIRED");
+            response.put("message","First login detected. Please change your password.");
+            response.put("status","PASSWORD_RESET_REQUIRED");
+            response.put("userName", username); // Send username for password reset
             return ResponseEntity.ok(response);
         }
 
@@ -131,7 +129,7 @@ public class UserController {
         Map<String,String> response = new HashMap<>();
         response.put("token", token);
         response.put("role", user.getRole().name());
-        response.put("firstLogin",user.isFirstLogin()?"true":"false");
+        response.put("firstLogin","false");
         return ResponseEntity.ok(response);
     }
 
@@ -243,5 +241,50 @@ public class UserController {
     }
 
 
+
+    @PostMapping("/first-login-password-change")
+    public ResponseEntity<Map<String,String>> firstLoginPasswordChange(@RequestBody Map<String,String> request) {
+        String username = request.get("userName");
+        String currentPassword = request.get("currentPassword");
+        String newPassword = request.get("newPassword");
+
+        if(username == null || currentPassword == null || newPassword == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message","Missing required fields"));
+        }
+
+        Users user = userService.findByUserName(username);
+        if(user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message","User not found"));
+        }
+
+        // Verify current password
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+        if(!encoder.matches(currentPassword, user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message","Current password is incorrect"));
+        }
+
+        // Check if it's first login
+        if(!user.isFirstLogin()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message","This endpoint is only for first-time password change"));
+        }
+
+        // Update password and set firstLogin to false
+        user.setPassword(encoder.encode(newPassword));
+        user.setFirstLogin(false);
+        usersRepo.save(user);
+
+        // Generate token for immediate login
+        String token = jwtUtil.generateToken(username);
+        Map<String,String> response = new HashMap<>();
+        response.put("message","Password changed successfully");
+        response.put("token", token);
+        response.put("role", user.getRole().name());
+        
+        return ResponseEntity.ok(response);
+    }
 
 }

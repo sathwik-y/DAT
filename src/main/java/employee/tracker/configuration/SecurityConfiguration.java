@@ -3,7 +3,6 @@ package employee.tracker.configuration;
 
 import java.util.List;
 
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -38,7 +37,7 @@ public class SecurityConfiguration {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
         http.csrf(customizer -> customizer.disable());
         http.authorizeHttpRequests(request -> request
-                .requestMatchers("/register", "/login","/api/auth/verify","/request-password-reset","/verify-reset-otp","/reset-password","/verify-otp","/register/bulk").permitAll()
+                .requestMatchers("/register", "/login","/api/auth/verify","/request-password-reset","/verify-reset-otp","/reset-password","/verify-otp","/register/bulk","/first-login-password-change").permitAll()
                 .requestMatchers("/items/**", "/tag/**", "/notifications/**", "/dashboard").authenticated()
                 .anyRequest().authenticated());
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
