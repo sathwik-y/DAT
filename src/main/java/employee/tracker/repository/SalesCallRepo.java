@@ -125,4 +125,16 @@ public interface SalesCallRepo extends JpaRepository<SalesCall,Long> {
   );
 
   List<SalesCall> findByLoggedBy(Users loggedBy);
+
+      @Query("SELECT sc FROM SalesCall sc " +
+           "JOIN FETCH sc.sale s " +
+           "JOIN FETCH sc.loggedBy lb " +
+           "WHERE lb.userName = :username " +
+           "AND sc.followUpDate IS NOT NULL " +
+           "AND sc.followUpDate BETWEEN :startDate AND :endDate")
+    List<SalesCall> findFollowUpsByUserAndDateRange(
+        @Param("username") String username,
+        @Param("startDate") LocalDateTime startDate,
+        @Param("endDate") LocalDateTime endDate
+    );
 }

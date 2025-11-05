@@ -125,4 +125,16 @@ public interface RecruitmentCallRepo extends JpaRepository<RecruitmentCall,Long>
     );
 
     List<RecruitmentCall> findByLoggedBy(Users loggedBy);
+
+        @Query("SELECT rc FROM RecruitmentCall rc " +
+           "JOIN FETCH rc.recruitment r " +
+           "JOIN FETCH rc.loggedBy lb " +
+           "WHERE lb.userName = :username " +
+           "AND rc.followUpDate IS NOT NULL " +
+           "AND rc.followUpDate BETWEEN :startDate AND :endDate")
+    List<RecruitmentCall> findFollowUpsByUserAndDateRange(
+        @Param("username") String username,
+        @Param("startDate") LocalDateTime startDate,
+        @Param("endDate") LocalDateTime endDate
+    );
 }
