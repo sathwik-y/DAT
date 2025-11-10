@@ -3,6 +3,8 @@ package employee.tracker.controller;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/todo")
 @RequiredArgsConstructor
+@Slf4j
 public class TodoController {
 
     private final TodoService todoService;
@@ -47,10 +50,8 @@ public class TodoController {
             
             // Use targetUser if provided, otherwise use logged-in user
             String userToQuery = (targetUser != null && !targetUser.isEmpty()) ? targetUser : username;
-            
-            System.out.println("TodoController: getTodoList - requesting user: " + username + 
-                              ", target user: " + userToQuery +
-                              ", startDate: " + startDate + ", endDate: " + endDate);
+
+            log.info("Requesting user: {}, target user: {}, startDate: {}, endDate: {}", username, userToQuery, startDate, endDate);
 
             TodoFilterDTO filters = TodoFilterDTO.builder()
                     .startDate(startDate)
@@ -63,11 +64,15 @@ public class TodoController {
                     .build();
 
             List<TodoDTO> todoList = todoService.getTodoList(userToQuery, filters);
+            log.info("Requesting user: {}, target user: {}, startDate: {}, endDate: {}", username, userToQuery, startDate, endDate);
+            log.debug("Requesting user: {}, Data returned: {}",username,todoList);
             return ResponseEntity.ok(todoList);
 
         } catch (Exception e) {
-            System.err.println("TodoController: Error getting todo list: " + e.getMessage());
-            e.printStackTrace();
+            String token = authHeader.substring(7);
+            String username = jwtUtil.extractUsername(token);
+            log.info("Error fetching Todo List for the user: {} | Message: {}",username, ExceptionUtils.getRootCauseMessage(e));
+            log.debug("Trace for the user: {}",username,e);
             return ResponseEntity.internalServerError().build();
         }
     }

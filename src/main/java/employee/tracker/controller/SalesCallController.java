@@ -2,6 +2,10 @@ package employee.tracker.controller;
 
 import java.util.List;
 
+import employee.tracker.model.RecruitmentCall;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.aspectj.weaver.ast.Call;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/sales/calls")
 @RequiredArgsConstructor
+@Slf4j
 public class SalesCallController {
     public final SalesCallService salesCallService;
 
@@ -31,9 +36,12 @@ public class SalesCallController {
         String username = authentication.getName();
         try{
             SalesCall newCall = salesCallService.createSalesCall(salesCall,saleId,username);
+            log.info("User : {} logged a new Sales Call",username);
+            log.debug("User : {} logged a new Sales Call: {}",username,newCall);
             return new ResponseEntity<>(newCall,HttpStatus.CREATED);
         }catch(Exception e){
-            e.printStackTrace();
+            log.error("Error occurred for user : {} | Message: {}",username, ExceptionUtils.getRootCauseMessage(e));
+            log.debug("Trace for User {} : ",username,e);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
@@ -46,8 +54,10 @@ public class SalesCallController {
         String username = authentication.getName();
         try{
             List<SalesCall> allZonalSalesCalls =  salesCallService.getZonalSalesCalls(username,filters);
+            logFetchSalesCall("ZH",username,allZonalSalesCalls,null);
             return new ResponseEntity<>(allZonalSalesCalls, HttpStatus.OK);
         }catch(Exception e){
+            logFetchSalesCall("ZH",username,null,e);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
@@ -59,8 +69,10 @@ public class SalesCallController {
         String username = authentication.getName();
         try{
             List<SalesCall> allRegionalSalesCalls = salesCallService.getRegionalSalesCalls(username,filters);
+            logFetchSalesCall("RH/ARH",username,allRegionalSalesCalls,null);
             return new ResponseEntity<>(allRegionalSalesCalls,HttpStatus.OK);
         }catch(Exception e){
+            logFetchSalesCall("RH/ARH",username,null,e);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
@@ -72,8 +84,10 @@ public class SalesCallController {
         String username = authentication.getName();
         try{
             List<SalesCall> allTerritorialSalesCalls = salesCallService.getTerritorialSalesCalls(username,filters);
+            logFetchSalesCall("TM",username,allTerritorialSalesCalls,null);
             return new ResponseEntity<>(allTerritorialSalesCalls,HttpStatus.OK);
         }catch(Exception e){
+            logFetchSalesCall("TM",username,null,e);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
@@ -85,8 +99,10 @@ public class SalesCallController {
         String username = authentication.getName();
         try{
             List<SalesCall> allAreaSalesCalls = salesCallService.getAreaSalesCalls(username,filters);
+            logFetchSalesCall("AM",username,allAreaSalesCalls,null);
             return new ResponseEntity<>(allAreaSalesCalls,HttpStatus.OK);
         }catch(Exception e){
+            logFetchSalesCall("AM",username,null,e);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
@@ -94,12 +110,25 @@ public class SalesCallController {
     @PreAuthorize("hasRole('NH')")
     @PostMapping("/all")
     public ResponseEntity<List<SalesCall>> getAllSales(@RequestBody SalesFilterDTO filters){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
         try{
             List<SalesCall> allSalesCalls = salesCallService.getAllSalesCalls(filters);
+            logFetchSalesCall("NH",username,allSalesCalls,null);
             return new ResponseEntity<>(allSalesCalls,HttpStatus.OK);
         } catch (Exception e) {
+            logFetchSalesCall("NH",username,null,e);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 
+    private void logFetchSalesCall(String role, String username, List<SalesCall> calls, Exception e){
+        if(e==null){
+            log.info("[{}] Sales calls fetched for user: {}",role,username);
+            log.debug("[{}] Sales calls fetched for user: {} -> {}",role,username, calls);
+        }else{
+            log.error("[{}] Failed to fetch Sales calls for user: {} | Message: {}",role,username,ExceptionUtils.getRootCauseMessage(e));
+            log.debug("[{}] Trace for the User {}",role,username,e);
+        }
+    }
 }

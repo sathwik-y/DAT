@@ -16,8 +16,14 @@ WORKDIR /app
 # Install netcat for healthcheck
 RUN apt-get update && apt-get install -y netcat && rm -rf /var/lib/apt/lists/*
 
+# Create logs directory for persistent logging
+RUN mkdir -p /app/logs
+
 # Copy JAR from build stage
 COPY --from=build /app/target/bet-0.0.1-SNAPSHOT.jar app.jar
+
+# Declare mount point for logs (so -v can link host folder)
+VOLUME ["/app/logs"]
 
 # Healthcheck for DB connectivity
 HEALTHCHECK --interval=30s --timeout=10s --retries=3 \

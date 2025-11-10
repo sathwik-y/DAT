@@ -1,5 +1,7 @@
 package employee.tracker.controller;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/dashboard")
 @RequiredArgsConstructor
+@Slf4j
 public class DashboardController {
     
     private final DashboardService dashboardService;
@@ -32,9 +35,12 @@ public class DashboardController {
                 request.getSalesFilters(), 
                 request.getRecruitmentFilters()
             );
+            log.info("Fetched Dashboard data for the user: {}",username);
+            log.debug("Fetched Dashboard data for the user {} : {}",username,dashboardData);
             return ResponseEntity.ok(dashboardData);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to fetch  Dashboard for the user: {} | Message: {}",username, ExceptionUtils.getRootCauseMessage(e));
+            log.debug("Trace for User {} : ",username,e);
             return ResponseEntity.badRequest().build();
         }
     }

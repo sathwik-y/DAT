@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class UserController {
 
     public final UserService service;
@@ -46,9 +49,12 @@ public class UserController {
             service.registerBulk(users);
             Map<String, String> response = new HashMap<>();
             response.put("message", users.size() + " users registered successfully with default password");
+            log.info("Successfully registered {} users in bulk",users.size());
+            log.debug("Bulk registered {} users -> {}",users.size(),users);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error registering bulk users | Message : {}", ExceptionUtils.getRootCauseMessage(e));
+            log.debug("Trace: ",e);
             Map<String, String> response = new HashMap<>();
             response.put("message", "Bulk registration failed: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
@@ -62,9 +68,12 @@ public class UserController {
             service.register(user);
             Map<String,String> response = new HashMap<>();
             response.put("message","Registration Successful. Please login to continue");
+            log.info("Successfully registered 1 user");
+            log.debug("Registered 1 new user: {}",user);
             return ResponseEntity.ok(response);
         }catch (Exception e){
-            e.printStackTrace();
+            log.error("Error registering user. | Message: {}",ExceptionUtils.getRootCauseMessage(e));
+            log.debug("Trace: ",e);
             Map<String,String> response = new HashMap<>();
             response.put("message","Registration Failed. Please try again");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
@@ -97,18 +106,15 @@ public class UserController {
         String username = loginRequest.get("userName");
         String password = loginRequest.get("password");
 
-        System.out.println("=== LOGIN DEBUG ===");
-        System.out.println("Username: " + username);
-        System.out.println("Password provided: " + (password != null));
         
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(username, password)
             );
-            System.out.println("Authentication successful");
+            log.info("Authentication successful for user: {}",username);
         } catch (Exception e) {
-            System.out.println("Authentication failed: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Authentication failed for user: {} | Message: {}",username,ExceptionUtils.getRootCauseMessage(e));
+            log.debug("Trace: ",e);
             throw e;
         }
 
@@ -121,6 +127,7 @@ public class UserController {
             response.put("message","First login detected. Please change your password.");
             response.put("status","PASSWORD_RESET_REQUIRED");
             response.put("userName", username); // Send username for password reset
+            log.info("First login password reset successfull for user {} ",username);
             return ResponseEntity.ok(response);
         }
 
@@ -132,9 +139,6 @@ public class UserController {
         response.put("firstLogin","false");
         return ResponseEntity.ok(response);
     }
-
-
-
 
 
     @GetMapping("/api/auth/verify")
@@ -155,15 +159,18 @@ public class UserController {
 
     @PreAuthorize("hasAnyRole('ZH', 'RH', 'ARH', 'AM', 'NH')")
     @GetMapping("/myTeam")
-    @Transactional(readOnly = true)  // Add this annotation
+    @Transactional(readOnly = true)
     public ResponseEntity<List<Users>> getMyTeam(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         try {
-            List<Users> zhTeam = userService.findMyTeam(username);
-            return new ResponseEntity<>(zhTeam, HttpStatus.OK);
+            List<Users> team = userService.findMyTeam(username);
+            log.info("Fetched team details of the user: {}",username);
+            log.debug("Team details: {}",team);
+            return new ResponseEntity<>(team, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to fetch team for the user: {} | Message: {}",username,ExceptionUtils.getRootCauseMessage(e));
+            log.debug("Trace: ",e);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
@@ -176,27 +183,31 @@ public class UserController {
 
         boolean valid = otpService.validateOtp(username, otp);
         if(!valid){
+            log.error("Invalid or expired OTP for the user: {}",username);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", "Invalid or expired OTP"));
         }
+        log.info("OTP valid for the user: {}",username);
         return ResponseEntity.ok(Map.of("message","OTP verified. Please reset your password."));
     }
 
 
     @PostMapping("/request-password-reset")
     public ResponseEntity<Map<String,String>> requestPasswordReset(@RequestBody Map<String,String> request) {
+        String username = request.get("userName");
+        Users user = userService.findByUserName(username);
         try {
-            String username = request.get("userName");
-            Users user = userService.findByUserName(username);
             if(user == null)
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Map.of("message","User not found"));
 
             otpService.generateOtp(user.getUserName(), user.getPhoneNo());
+            log.info("Password reset otp sent to the user: {}",username);
             return ResponseEntity.ok(Map.of("message","OTP sent to your registered phone number."));
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Password reset issue for the user: {} | Message: {}",username,ExceptionUtils.getRootCauseMessage(e));
+            log.debug("Trace: ",e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Failed to send OTP: " + e.getMessage()));
         }
@@ -214,10 +225,13 @@ public class UserController {
                     .body(Map.of("message","User not found"));
 
         boolean valid = otpService.validateOtp(user.getUserName(), otp);
-        if(!valid)
+        if(!valid){
+            log.error("Invalid or expired OTP for the user: {}",username);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message","Invalid or expired OTP"));
+        }
 
+        log.info("OTP valid for the user: {}",username);
         return ResponseEntity.ok(Map.of("message","OTP verified. You can reset your password."));
     }
 
@@ -229,14 +243,16 @@ public class UserController {
         String newPassword = request.get("newPassword");
 
         Users user = userService.findByUserName(username);
-        if(user == null)
+        if(user == null){
+            log.error("User not found for password reset: {}",username);
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("message","User not found"));
+        }
 
         user.setPassword(new BCryptPasswordEncoder(12).encode(newPassword));
         user.setFirstLogin(false);
         usersRepo.save(user);
-
+        log.info("Password reset successful for the user: {}",username);
         return ResponseEntity.ok(Map.of("message","Password reset successful. You can now login."));
     }
 
@@ -249,12 +265,14 @@ public class UserController {
         String newPassword = request.get("newPassword");
 
         if(username == null || currentPassword == null || newPassword == null) {
+            log.error("First login password change is missing the required fields");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message","Missing required fields"));
         }
 
         Users user = userService.findByUserName(username);
         if(user == null) {
+            log.error("User not found for first Login password change: {}",username);
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("message","User not found"));
         }
@@ -262,6 +280,7 @@ public class UserController {
         // Verify current password
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
         if(!encoder.matches(currentPassword, user.getPassword())) {
+            log.error("Current password is incorrect to change password for the user: {}",username);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message","Current password is incorrect"));
         }
